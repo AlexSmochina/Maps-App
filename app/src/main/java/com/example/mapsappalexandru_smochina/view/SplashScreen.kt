@@ -1,4 +1,4 @@
-package com.example.mapsappalexandru_smochina
+package com.example.mapsappalexandru_smochina.view
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -18,6 +18,8 @@ import androidx.compose.ui.draw.paint
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
+import com.example.mapsappalexandru_smochina.R
+import com.example.mapsappalexandru_smochina.Routes
 import kotlinx.coroutines.delay
 
 @Composable

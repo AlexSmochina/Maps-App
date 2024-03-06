@@ -1,8 +1,7 @@
-package com.example.mapsappalexandru_smochina
+package com.example.mapsappalexandru_smochina.view
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,11 +16,17 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
 
 @Composable
 fun Screen_Maps(navigationController: NavHostController) {
@@ -29,12 +34,12 @@ fun Screen_Maps(navigationController: NavHostController) {
         modifier = Modifier
             .fillMaxSize()
     ) {
-        Scaffold (topBar = { MyTopAppBar()},) { paddingValues ->
+        Scaffold (topBar = { MyTopAppBar() },) { paddingValues ->
             Box(modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
             ){
-
+                MapScreen()
             }
         }
     }
@@ -69,4 +74,27 @@ fun MyTopAppBar(){
             }
         }
     )
+}
+
+@Composable
+fun MapScreen(){
+    Column (
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ){
+        val itb = LatLng(41.4534265,2.1837151)
+        val cameraPositionState = rememberCameraPositionState{
+            position = CameraPosition.fromLatLngZoom(itb,10f)
+        }
+        GoogleMap (
+            modifier = Modifier.fillMaxSize(),
+            cameraPositionState = cameraPositionState) {
+            Marker(
+                state = MarkerState(position = itb),
+                title = "ITB",
+                snippet = "Marker at ITB"
+            )
+        }
+    }
 }
