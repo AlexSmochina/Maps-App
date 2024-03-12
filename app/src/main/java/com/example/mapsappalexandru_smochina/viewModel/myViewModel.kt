@@ -1,4 +1,6 @@
 package com.example.mapsappalexandru_smochina.viewModel
 
-class myViewModel {
+import androidx.lifecycle.ViewModel
+
+class myViewModel : ViewModel() {
 }

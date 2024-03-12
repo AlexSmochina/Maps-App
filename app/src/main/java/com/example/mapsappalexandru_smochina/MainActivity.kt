@@ -3,6 +3,7 @@ package com.example.mapsappalexandru_smochina
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -11,10 +12,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.mapsappalexandru_smochina.ui.theme.MapsAppAlexandru_SmochinaTheme
+import com.example.mapsappalexandru_smochina.view.MyDrawer
 import com.example.mapsappalexandru_smochina.view.Screen_Maps
 import com.example.mapsappalexandru_smochina.view.Splash_Screen
+import com.example.mapsappalexandru_smochina.viewModel.myViewModel
 
 class MainActivity : ComponentActivity() {
+    val viewModel: myViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -34,6 +38,7 @@ class MainActivity : ComponentActivity() {
                         composable(Routes.ScreenMaps.route) {
                             Screen_Maps(
                                 navigationController,
+                                viewModel
                             )
                         }
                     }
