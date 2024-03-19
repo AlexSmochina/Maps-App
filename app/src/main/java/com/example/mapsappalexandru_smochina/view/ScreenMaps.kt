@@ -1,10 +1,15 @@
 package com.example.mapsappalexandru_smochina.view
 
+import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
@@ -20,6 +25,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -45,6 +51,7 @@ fun Screen_Maps(navigationController: NavHostController, myViewModel: myViewMode
 }
 
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun MyDrawer(
     myViewModel: myViewModel,
@@ -52,7 +59,7 @@ fun MyDrawer(
     val navigationController = rememberNavController()
     val scope = rememberCoroutineScope()
     val state: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    ModalNavigationDrawer(drawerState = state, gesturesEnabled = true, drawerContent = {
+    ModalNavigationDrawer(drawerState = state, gesturesEnabled = false, drawerContent = {
         ModalDrawerSheet {
             Text(text = "Drawer title", modifier = Modifier.padding(16.dp))
             Divider()
@@ -65,6 +72,25 @@ fun MyDrawer(
                     }
                 }
             )
+            Column (
+                modifier = Modifier
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ){
+                Button(
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Red,
+                        contentColor = Color.White
+                    ),
+                    onClick = {
+                    scope.launch {
+                        state.close()
+                    }
+                }) {
+                    Text(text = "Volver")
+                }
+            }
         }
     }) {
         MyScaffold(myViewModel,state)
