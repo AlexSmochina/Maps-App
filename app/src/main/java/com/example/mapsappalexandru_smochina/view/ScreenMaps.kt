@@ -41,7 +41,6 @@ fun Screen_Maps(navigationController: NavHostController, myViewModel: myViewMode
             .fillMaxSize()
     ) {
         MyDrawer(myViewModel)
-
     }
 }
 
@@ -49,7 +48,6 @@ fun Screen_Maps(navigationController: NavHostController, myViewModel: myViewMode
 @Composable
 fun MyDrawer(
     myViewModel: myViewModel,
-    contenido: @Composable () -> Unit
 ) {
     val navigationController = rememberNavController()
     val scope = rememberCoroutineScope()
@@ -69,14 +67,19 @@ fun MyDrawer(
             )
         }
     }) {
-        MyScaffold(myViewModel, state)
-
+        MyScaffold(myViewModel,state)
     }
 }
 
 @Composable
-fun MyScaffold{
-
+fun MyScaffold(
+    myViewModel: myViewModel,
+    state: DrawerState
+) {
+    Column {
+        MyTopAppBar(myViewModel = myViewModel, state = state)
+        MapScreen()
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
