@@ -58,3 +58,4 @@ fun Splash_Screen(navController: NavController) {
     }
     Splash_Screen(alphaAnim.value)
 }
+

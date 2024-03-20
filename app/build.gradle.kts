@@ -75,6 +75,14 @@ dependencies {
     implementation("com.google.maps.android:maps-compose:2.11.4")
     implementation("com.google.android.gms:play-services-maps:18.2.0")
     implementation("com.google.android.gms:play-services-location:21.2.0")
+    //CAMERA
+    implementation("androidx.camera:camera-core:1.3.2")
+    implementation("androidx.camera:camea-camera2:1.3.2")
+    implementation("androidx.camera:camera-lifecycle:1.3.2")
+    implementation("androidx.camera:camera-view:1.3.2")
+    implementation("androidx.camera:camera-extensions:1.3.2")
+    //ICONS
+    implementation("androidx.compose.material:material-icons-extended:1.6.3")
 }
 
 secrets {

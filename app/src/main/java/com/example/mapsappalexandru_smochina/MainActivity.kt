@@ -12,7 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.mapsappalexandru_smochina.ui.theme.MapsAppAlexandru_SmochinaTheme
-import com.example.mapsappalexandru_smochina.view.MyDrawer
+import com.example.mapsappalexandru_smochina.view.Screen_Camera
 import com.example.mapsappalexandru_smochina.view.Screen_Maps
 import com.example.mapsappalexandru_smochina.view.Splash_Screen
 import com.example.mapsappalexandru_smochina.viewModel.myViewModel
@@ -37,6 +37,12 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(Routes.ScreenMaps.route) {
                             Screen_Maps(
+                                navigationController,
+                                viewModel
+                            )
+                        }
+                        composable(Routes.ScreenMaps.route) {
+                            Screen_Camera(
                                 navigationController,
                                 viewModel
                             )
