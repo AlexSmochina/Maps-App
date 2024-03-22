@@ -83,6 +83,8 @@ dependencies {
     implementation("androidx.camera:camera-extensions:1.3.2")
     //ICONS
     implementation("androidx.compose.material:material-icons-extended:1.6.3")
+    //GESTIONAR PERMISOS
+    implementation("com.google.accompanist:accompanist-permissions:0.28.0")
 }
 
 secrets {
