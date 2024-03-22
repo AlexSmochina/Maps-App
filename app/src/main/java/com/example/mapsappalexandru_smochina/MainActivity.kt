@@ -41,7 +41,7 @@ class MainActivity : ComponentActivity() {
                                 viewModel
                             )
                         }
-                        composable(Routes.ScreenMaps.route) {
+                        composable(Routes.ScreenCamera.route) {
                             Screen_Camera(
                                 navigationController,
                                 viewModel
