@@ -24,6 +24,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -104,7 +106,7 @@ fun MyScaffold(
 ) {
     Column {
         MyTopAppBar(myViewModel = myViewModel, state = state)
-        MapScreen()
+        MapScreen(myViewModel)
     }
 }
 
@@ -132,23 +134,24 @@ fun MyTopAppBar(myViewModel: myViewModel, state: DrawerState) {
 
 
 @Composable
-fun MapScreen() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        val itb = LatLng(41.4534265, 2.1837151)
-        val cameraPositionState = rememberCameraPositionState {
-            position = CameraPosition.fromLatLngZoom(itb, 10f)
+fun MapScreen(myViewModel: myViewModel) {
+    val markers = myViewModel.markers
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(LatLng(41.4534265, 2.1837151), 10f)
+    }
+
+    GoogleMap(
+        modifier = Modifier.fillMaxSize(),
+        cameraPositionState = cameraPositionState,
+        onMapLongClick = { latLng ->
+            myViewModel.addMarker(latLng)
         }
-        GoogleMap(
-            modifier = Modifier.fillMaxSize(),
-            cameraPositionState = cameraPositionState
-        ) {
+    ) {
+        markers.forEachIndexed { index, latLng ->
             Marker(
-                state = MarkerState(position = itb),
-                title = "ITB",
-                snippet = "Marker at ITB"
+                state = MarkerState(position = latLng),
+                title = "Marker $index",
+                snippet = "Custom marker at $latLng"
             )
         }
     }

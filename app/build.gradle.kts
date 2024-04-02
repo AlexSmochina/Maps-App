@@ -86,7 +86,8 @@ dependencies {
     //GESTIONAR PERMISOS
     implementation("com.google.accompanist:accompanist-permissions:0.28.0")
     implementation("com.google.accompanist:accompanist-permissions:0.28.0")
-
+    //LIVE DATA
+    implementation("androidx.compose.runtime:runtime-livedata:1.5.4")
 }
 
 secrets {

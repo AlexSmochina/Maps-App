@@ -1,7 +1,9 @@
 package com.example.mapsappalexandru_smochina.viewModel
 
+import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.google.android.gms.maps.model.LatLng
 
 class myViewModel : ViewModel() {
     private val _cameraPermissionGranted = MutableLiveData(false)
@@ -12,6 +14,12 @@ class myViewModel : ViewModel() {
 
     private val _showPermissionDenied = MutableLiveData(false)
     val showPermissionDenied = _showPermissionDenied
+
+    val markers = mutableStateListOf<LatLng>()
+
+    fun addMarker(latLng: LatLng) {
+        markers.add(latLng)
+    }
 
     fun setCameraPermissionGranted(granted: Boolean) {
         _cameraPermissionGranted.value = granted
