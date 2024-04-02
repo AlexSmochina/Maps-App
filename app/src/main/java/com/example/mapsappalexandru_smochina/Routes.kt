@@ -5,4 +5,6 @@ sealed class Routes(val route: String) {
     object ScreenMaps : Routes("ScreenMaps")
     object ScreenCamera : Routes("ScreenCamera")
 
+    object TakePhotoScreen : Routes("TakePhotoScreen")
+
 }

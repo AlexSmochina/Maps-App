@@ -15,6 +15,7 @@ import com.example.mapsappalexandru_smochina.ui.theme.MapsAppAlexandru_SmochinaT
 import com.example.mapsappalexandru_smochina.view.Screen_Camera
 import com.example.mapsappalexandru_smochina.view.Screen_Maps
 import com.example.mapsappalexandru_smochina.view.Splash_Screen
+import com.example.mapsappalexandru_smochina.view.TakePhoto_Screen
 import com.example.mapsappalexandru_smochina.viewModel.myViewModel
 
 class MainActivity : ComponentActivity() {
@@ -43,6 +44,12 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(Routes.ScreenCamera.route) {
                             Screen_Camera(
+                                navigationController,
+                                viewModel
+                            )
+                        }
+                        composable(Routes.TakePhotoScreen.route) {
+                            TakePhoto_Screen(
                                 navigationController,
                                 viewModel
                             )
