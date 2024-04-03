@@ -1,5 +1,6 @@
 package com.example.mapsappalexandru_smochina.view
 
+import android.Manifest
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -8,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerState
@@ -24,8 +24,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,6 +33,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.mapsappalexandru_smochina.viewModel.myViewModel
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -42,13 +44,29 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun Screen_Maps(navigationController: NavHostController, myViewModel: myViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
     ) {
-        MyDrawer(myViewModel)
+        val permissionState = rememberPermissionState(permission = Manifest.permission.ACCESS_FINE_LOCATION)
+        LaunchedEffect(Unit) {
+            permissionState.launchPermissionRequest()
+        }
+        if (permissionState.status.isGranted){
+            MyDrawer(myViewModel)
+        }else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ){
+                Text(text = "Need permission")
+            }
+        }
     }
 }
 
@@ -66,13 +84,22 @@ fun MyDrawer(
             Text(text = "Drawer title", modifier = Modifier.padding(16.dp))
             Divider()
             NavigationDrawerItem(
-                label = { Text(text = "Drawer Item 1") },
+                label = { Text(text = "Mapa") },
                 selected = false,
                 onClick = {
                     scope.launch {
                         state.close()
                     }
                 }
+            )
+            NavigationDrawerItem(
+                    label = { Text(text = "Lista marcadores") },
+            selected = false,
+            onClick = {
+                scope.launch {
+                    state.close()
+                }
+            }
             )
             Column (
                 modifier = Modifier
@@ -105,14 +132,14 @@ fun MyScaffold(
     state: DrawerState
 ) {
     Column {
-        MyTopAppBar(myViewModel = myViewModel, state = state)
+        MyTopAppBar(state = state)
         MapScreen(myViewModel)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyTopAppBar(myViewModel: myViewModel, state: DrawerState) {
+fun MyTopAppBar(state: DrawerState) {
     val scope = rememberCoroutineScope()
     TopAppBar(
         title = { Text(text = "Maps APP") },
