@@ -88,6 +88,8 @@ dependencies {
     implementation("com.google.accompanist:accompanist-permissions:0.28.0")
     //LIVE DATA
     implementation("androidx.compose.runtime:runtime-livedata:1.5.4")
+    //
+    implementation("androidx.compose.material3:material3:1.2.1")
 }
 
 secrets {
