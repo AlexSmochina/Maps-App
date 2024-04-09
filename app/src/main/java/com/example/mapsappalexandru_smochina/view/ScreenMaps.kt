@@ -85,7 +85,18 @@ fun Screen_Maps(navigationController: NavHostController, viewModel: myViewModel)
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ){
-                MapScreen(viewModel) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = "No tienes permisos cabron mamon")
+                    Button(
+                        onClick = {})
+                    {
+                        Text(text = "Para activar los permisos")
+                    }
                 }
             }
         }
