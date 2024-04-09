@@ -2,13 +2,16 @@ package com.example.mapsappalexandru_smochina.view
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.location.Location
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CameraAlt
@@ -43,14 +46,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
+import com.example.mapsappalexandru_smochina.MainActivity
 import com.example.mapsappalexandru_smochina.Routes
 import com.example.mapsappalexandru_smochina.viewModel.myViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -59,9 +64,10 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.launch
 
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun Screen_Maps(navigationController: NavHostController, myViewModel: myViewModel) {
+fun Screen_Maps(navigationController: NavHostController, viewModel: myViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -71,7 +77,7 @@ fun Screen_Maps(navigationController: NavHostController, myViewModel: myViewMode
             permissionState.launchPermissionRequest()
         }
         if (permissionState.status.isGranted){
-            MyDrawer(myViewModel)
+            MyDrawer(viewModel,navigationController)
         }else {
             Column(
                 modifier = Modifier
@@ -79,19 +85,21 @@ fun Screen_Maps(navigationController: NavHostController, myViewModel: myViewMode
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ){
-                Text(text = "Need permission")
+                MapScreen(viewModel) {
+                }
             }
         }
     }
 }
 
 
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun MyDrawer(
-    myViewModel: myViewModel,
+    viewModel: myViewModel,
+    navigationController: NavHostController
 ) {
-    val navigationController = rememberNavController()
     val scope = rememberCoroutineScope()
     val state: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     ModalNavigationDrawer(drawerState = state, gesturesEnabled = false, drawerContent = {
@@ -102,8 +110,8 @@ fun MyDrawer(
                 label = { Text(text = "Mapa") },
                 selected = false,
                 onClick = {
-                    if (navigationController.currentDestination?.route != Routes.ScreenMaps.route) {
-                        navigationController.navigate(Routes.ScreenMaps.route)
+                    scope.launch {
+                        state.close()
                     }
                 }
             )
@@ -111,7 +119,7 @@ fun MyDrawer(
                 label = { Text(text = "Lista marcadores") },
                 selected = false,
                 onClick = {
-
+                    navigationController.navigate(Routes.ScreenListMaps.route)
                 }
             )
             Column (
@@ -135,21 +143,24 @@ fun MyDrawer(
             }
         }
     }) {
-        MyScaffold(myViewModel,state)
+        MyScaffold(viewModel,state, navigationController)
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
 fun MyScaffold(
-    myViewModel: myViewModel,
-    state: DrawerState
+    viewModel: myViewModel,
+    state: DrawerState,
+    navigationController: NavHostController
 ) {
     Column {
         MyTopAppBar(state = state)
         BottomSheet(
-            viewModel = myViewModel,
+            viewModel = viewModel,
+            navigationController = navigationController,
             onAddMarker = { latLng, title, snippet ->
-                myViewModel.addMarker(latLng, title, snippet)
+                viewModel.addMarker(latLng, title, snippet)
             }
         )
     }
@@ -179,14 +190,31 @@ fun MyTopAppBar(state: DrawerState) {
 }
 
 
+@SuppressLint("MissingPermission")
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
 fun MapScreen(
-    myViewModel: myViewModel,
+    viewModel: myViewModel,
     onMapLongClick: (LatLng) -> Unit // Función de devolución de llamada para el evento de mantener presionado
 ) {
-    val markers = myViewModel.getMarkersList()
+    val context = LocalContext.current
+    val fusedLocationProviderClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+    var lastKnownLocation by remember { mutableStateOf<Location?>(null) }
+    var deviceLatLng by remember { mutableStateOf(LatLng(0.0,0.0)) }
+    val markers = viewModel.getMarkersList()
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(LatLng(41.4534265, 2.1837151), 10f)
+        position = CameraPosition.fromLatLngZoom(deviceLatLng, 13f)
+    }
+    val locationResult = fusedLocationProviderClient.getCurrentLocation(100, null)
+
+    locationResult.addOnCompleteListener(context as MainActivity) { task->
+        if (task.isSuccessful) {
+            lastKnownLocation = task.result
+            deviceLatLng = LatLng(lastKnownLocation!!.latitude, lastKnownLocation!!.longitude)
+            cameraPositionState.position = CameraPosition.fromLatLngZoom(deviceLatLng,13f)
+        }else {
+            Log.e("Error", "Exception: %s", task.exception)
+        }
     }
 
     GoogleMap(
@@ -206,11 +234,13 @@ fun MapScreen(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomSheet(
     viewModel: myViewModel,
-    onAddMarker: (LatLng, String, String) -> Unit
+    onAddMarker: (LatLng, String, String) -> Unit,
+    navigationController: NavHostController
 ) {
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
@@ -270,13 +300,14 @@ fun BottomSheet(
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    Icon(
-                        imageVector = Icons.Filled.CameraAlt,
-                        contentDescription = "camera",
-                        modifier = Modifier
-                            .size(100.dp)
-                            .align(alignment = Alignment.CenterHorizontally)
-                    )
+                    Button(onClick = { navigationController.navigate(Routes.ScreenCamera.route)}) {
+                        Icon(
+                            imageVector = Icons.Filled.CameraAlt,
+                            contentDescription = "camera",
+                            modifier = Modifier
+
+                        )
+                    }
 
                     Button(
                         onClick = {

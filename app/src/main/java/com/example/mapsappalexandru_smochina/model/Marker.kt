@@ -6,4 +6,5 @@ data class Marker(
     val latLng: LatLng,
     val title: String,
     val snippet: String
+
 )

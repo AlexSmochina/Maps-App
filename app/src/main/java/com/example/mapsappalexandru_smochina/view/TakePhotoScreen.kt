@@ -34,6 +34,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavHostController
+import com.example.mapsappalexandru_smochina.Routes
 import com.example.mapsappalexandru_smochina.viewModel.myViewModel
 
 @Composable
@@ -72,7 +73,7 @@ fun TakePhoto_Screen(navigationController: NavHostController, viewModel: myViewM
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ){
-                IconButton(onClick = {}) {
+                IconButton(onClick = { navigationController.navigate(Routes.ScreenGallery.route) }) {
                     Icon(imageVector = Icons.Default.Photo, contentDescription = "Open gallery")
                 }
                 IconButton(onClick = {
