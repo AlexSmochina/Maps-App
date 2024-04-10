@@ -103,7 +103,6 @@ fun Screen_Maps(navigationController: NavHostController, viewModel: myViewModel)
     }
 }
 
-
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable

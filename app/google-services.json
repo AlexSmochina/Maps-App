@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "556322939575",
+    "project_id": "myapp-maps-416311",
+    "storage_bucket": "myapp-maps-416311.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:556322939575:android:99b2b353157d769d712332",
+        "android_client_info": {
+          "package_name": "com.example.mapsappalexandru_smochina"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAbjs5PnNk6bQ_IED1jIYyQv5zZkPox_3s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
