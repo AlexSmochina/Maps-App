@@ -93,8 +93,13 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.2.1")
     //FIREBASE
     implementation(platform("com.google.firebase:firebase-bom:32.8.0"))
+    implementation ("com.firebaseui:firebase-ui-auth:7.2.0")
     //FIRESTORE
     implementation("com.google.firebase:firebase-firestore-ktx")
+    //RETROFIT
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
 }
 
 secrets {
