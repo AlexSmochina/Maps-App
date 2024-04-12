@@ -17,8 +17,9 @@ import com.example.mapsappalexandru_smochina.ui.theme.MapsAppAlexandru_SmochinaT
 import com.example.mapsappalexandru_smochina.view.Screen_Camera
 import com.example.mapsappalexandru_smochina.view.Screen_Gallery
 import com.example.mapsappalexandru_smochina.view.Screen_List_Maps
+import com.example.mapsappalexandru_smochina.view.Screen_Login
 import com.example.mapsappalexandru_smochina.view.Screen_Maps
-import com.example.mapsappalexandru_smochina.view.Splash_Screen
+import com.example.mapsappalexandru_smochina.view.Screen_Sign_Up
 import com.example.mapsappalexandru_smochina.view.TakePhoto_Screen
 import com.example.mapsappalexandru_smochina.viewModel.myViewModel
 
@@ -34,11 +35,18 @@ class MainActivity : ComponentActivity() {
                     val navigationController = rememberNavController()
                     NavHost(
                         navController = navigationController,
-                        startDestination = Routes.SplashScreen.route
+                        startDestination = Routes.ScreenLogin.route
                     ) {
-                        composable(Routes.SplashScreen.route) {
-                            Splash_Screen(
+                        composable(Routes.ScreenLogin.route) {
+                            Screen_Login(
                                 navigationController,
+                                viewModel
+                            )
+                        }
+                        composable(Routes.ScreenSignUp.route) {
+                            Screen_Sign_Up(
+                                navigationController,
+                                viewModel
                             )
                         }
                         composable(Routes.ScreenMaps.route) {
