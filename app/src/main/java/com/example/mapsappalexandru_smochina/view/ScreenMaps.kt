@@ -60,6 +60,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -145,10 +146,10 @@ fun MyDrawer(
                         contentColor = Color.White
                     ),
                     onClick = {
-                    scope.launch {
-                        state.close()
-                    }
-                }) {
+                        scope.launch {
+                            state.close()
+                        }
+                    }) {
                     Text(text = "Volver")
                 }
             }
@@ -170,9 +171,6 @@ fun MyScaffold(
         BottomSheet(
             viewModel = viewModel,
             navigationController = navigationController,
-            onAddMarker = { latLng, title, snippet ->
-                viewModel.addMarker(com.example.mapsappalexandru_smochina.model.Marker(latLng, title, snippet))
-            }
         )
     }
 }
@@ -200,7 +198,6 @@ fun MyTopAppBar(state: DrawerState) {
     )
 }
 
-
 @SuppressLint("MissingPermission")
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
@@ -212,17 +209,21 @@ fun MapScreen(
     val fusedLocationProviderClient = remember { LocationServices.getFusedLocationProviderClient(context) }
     var lastKnownLocation by remember { mutableStateOf<Location?>(null) }
     var deviceLatLng by remember { mutableStateOf(LatLng(0.0,0.0)) }
+    val marker by viewModel.markerList.observeAsState(emptyList())
+    viewModel.getMarker()
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(deviceLatLng, 13f)
+        position = CameraPosition.fromLatLngZoom(deviceLatLng, 18f)
     }
     val locationResult = fusedLocationProviderClient.getCurrentLocation(100, null)
-
-    locationResult.addOnCompleteListener(context as MainActivity) { task->
+    locationResult.addOnCompleteListener(context as MainActivity) { task ->
         if (task.isSuccessful) {
             lastKnownLocation = task.result
-            deviceLatLng = LatLng(lastKnownLocation!!.latitude, lastKnownLocation!!.longitude)
-            cameraPositionState.position = CameraPosition.fromLatLngZoom(deviceLatLng,13f)
-        }else {
+            deviceLatLng =
+                LatLng(lastKnownLocation!!.latitude, lastKnownLocation!!.longitude)
+            cameraPositionState.position =
+                CameraPosition.fromLatLngZoom(deviceLatLng, 13f)
+            viewModel.changePosition(deviceLatLng)
+        } else {
             Log.e("Error", "Exception: %s", task.exception)
         }
     }
@@ -230,20 +231,24 @@ fun MapScreen(
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState,
-        onMapLongClick = { latLng ->
-            onMapLongClick(latLng)
-        }
+        onMapLongClick = {
+            onMapLongClick(it) // Llama a la función de devolución de llamada con las coordenadas
+            viewModel.changePosition(it) // Actualiza la posición en el ViewModel
+        },
+        properties = MapProperties(
+            isMyLocationEnabled = true,
+            isTrafficEnabled = true
+        )
     ) {
-        viewModel.markerList.value?.forEachIndexed { indx, marker ->
+        marker.forEach { marker ->
             Marker(
-                state = MarkerState(position = LatLng(marker.latitud, marker.longitud)),
+                state = MarkerState(LatLng(marker.latitud, marker.longitud)),
                 title = marker.title,
                 snippet = marker.snippet
             )
         }
     }
 }
-
 
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -257,7 +262,6 @@ fun BottomSheet(
     var showBottomSheet by remember { mutableStateOf(false) }
     var title by remember { mutableStateOf("") }
     var snippet by remember { mutableStateOf("") }
-    var markerLatLng by remember { mutableStateOf(LatLng(0.0, 0.0)) }
 
     Scaffold(
         floatingActionButton = {
@@ -280,8 +284,8 @@ fun BottomSheet(
         Column(
             modifier = Modifier.padding(contentPadding)
         ) {
-            MapScreen(viewModel) { latLng ->
-                markerLatLng = LatLng(latLng.latitude, latLng.longitude)
+            MapScreen(viewModel) {
+                viewModel.changePosition(it)
                 showBottomSheet = true
             }
         }
@@ -321,8 +325,9 @@ fun BottomSheet(
 
                     Button(
                         onClick = {
-                            // Agrega el marcador con la posición y la información proporcionada
-                            viewModel.addMarker(com.example.mapsappalexandru_smochina.model.Marker(markerLatLng.latitude,markerLatLng.longitude, title, snippet))
+                            val latLng = viewModel.getPosition()
+                            // Agrega el marcador con las coordenadas almacenadas en markerLatLng y la información proporcionada
+                            viewModel.addMarker(com.example.mapsappalexandru_smochina.model.Marker(null,latLng.latitude, latLng.longitude, title, snippet))
                             // Oculta el modal bottom sheet
                             scope.launch { sheetState.hide() }.invokeOnCompletion {
                                 if (!sheetState.isVisible) {

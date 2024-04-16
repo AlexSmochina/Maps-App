@@ -1,10 +1,11 @@
 package com.example.mapsappalexandru_smochina.model
 
 data class Marker(
-    val longitud: Double,
-    val latitud: Double,
+    var markerId:String?,
+    var longitud: Double,
+    var latitud: Double,
     var title: String,
-    val snippet: String
+    var snippet: String
 ){
-    constructor() : this(0.0,0.0,"","")
+    constructor() : this(null,0.0,0.0,"","")
 }

@@ -26,6 +26,15 @@ class myViewModel : ViewModel() {
     private val _showPermissionDenied = MutableLiveData(false)
     val showPermissionDenied = _showPermissionDenied
 
+    private var position = LatLng(41.4534265, 2.1837151)
+    fun changePosition(positionNueva: LatLng) {
+        position = positionNueva
+    }
+
+    fun getPosition(): LatLng {
+        return position
+    }
+
     private var _markerList = MutableLiveData<MutableList<Marker>>()
     var markerList: LiveData<MutableList<Marker>> = _markerList
 
@@ -112,7 +121,11 @@ class myViewModel : ViewModel() {
             for (dc: DocumentChange in value?.documentChanges!!) {
                 if (dc.type == DocumentChange.Type.ADDED) {
                     val newMarker = dc.document.toObject(Marker::class.java)
-                    newMarker.title = dc.document.id
+                    newMarker.markerId = dc.document.id
+                    newMarker.latitud =
+                        dc.document.get("longitud").toString().toDouble()
+                    newMarker.longitud =
+                        dc.document.get("latitud").toString().toDouble()
                     tempList.add(newMarker)
                 }
             }
