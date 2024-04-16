@@ -39,6 +39,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -170,7 +171,7 @@ fun MyScaffold(
             viewModel = viewModel,
             navigationController = navigationController,
             onAddMarker = { latLng, title, snippet ->
-                viewModel.addMarker(latLng, title, snippet)
+                viewModel.addMarker(com.example.mapsappalexandru_smochina.model.Marker(latLng, title, snippet))
             }
         )
     }
@@ -211,7 +212,6 @@ fun MapScreen(
     val fusedLocationProviderClient = remember { LocationServices.getFusedLocationProviderClient(context) }
     var lastKnownLocation by remember { mutableStateOf<Location?>(null) }
     var deviceLatLng by remember { mutableStateOf(LatLng(0.0,0.0)) }
-    val markers = viewModel.getMarkersList()
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(deviceLatLng, 13f)
     }
@@ -234,9 +234,9 @@ fun MapScreen(
             onMapLongClick(latLng)
         }
     ) {
-        markers.forEachIndexed { index, marker ->
+        viewModel.markerList.value?.forEachIndexed { indx, marker ->
             Marker(
-                state = MarkerState(position = marker.latLng),
+                state = MarkerState(position = LatLng(marker.latitud, marker.longitud)),
                 title = marker.title,
                 snippet = marker.snippet
             )
@@ -244,12 +244,12 @@ fun MapScreen(
     }
 }
 
+
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomSheet(
     viewModel: myViewModel,
-    onAddMarker: (LatLng, String, String) -> Unit,
     navigationController: NavHostController
 ) {
     val sheetState = rememberModalBottomSheetState()
@@ -281,7 +281,7 @@ fun BottomSheet(
             modifier = Modifier.padding(contentPadding)
         ) {
             MapScreen(viewModel) { latLng ->
-                markerLatLng = latLng
+                markerLatLng = LatLng(latLng.latitude, latLng.longitude)
                 showBottomSheet = true
             }
         }
@@ -322,7 +322,7 @@ fun BottomSheet(
                     Button(
                         onClick = {
                             // Agrega el marcador con la posición y la información proporcionada
-                            onAddMarker(markerLatLng, title, snippet)
+                            viewModel.addMarker(com.example.mapsappalexandru_smochina.model.Marker(markerLatLng.latitude,markerLatLng.longitude, title, snippet))
                             // Oculta el modal bottom sheet
                             scope.launch { sheetState.hide() }.invokeOnCompletion {
                                 if (!sheetState.isVisible) {

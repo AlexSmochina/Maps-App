@@ -2,15 +2,19 @@ package com.example.mapsappalexandru_smochina.viewModel
 
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.mapsappalexandru_smochina.model.Marker
+import com.example.mapsappalexandru_smochina.model.Repository
 import com.example.mapsappalexandru_smochina.model.Usuario
 import com.firebase.ui.auth.data.model.User
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.toObject
 
 class myViewModel : ViewModel() {
     private val _cameraPermissionGranted = MutableLiveData(false)
@@ -22,22 +26,8 @@ class myViewModel : ViewModel() {
     private val _showPermissionDenied = MutableLiveData(false)
     val showPermissionDenied = _showPermissionDenied
 
-    // Lista mutable para almacenar los marcadores agregados
-    private val markersList = mutableListOf<Marker>()
-
-    // Función para agregar un marcador con título y snippet
-    fun addMarker(latLng: LatLng, title: String, snippet: String) {
-        // Crea un nuevo marcador con los datos proporcionados
-        val newMarker = Marker(latLng, title, snippet)
-
-        // Agrega el nuevo marcador a la lista de marcadores
-        markersList.add(newMarker)
-
-    }
-
-    fun getMarkersList(): List<Marker> {
-        return markersList.toList()
-    }
+    private var _markerList = MutableLiveData<MutableList<Marker>>()
+    var markerList: LiveData<MutableList<Marker>> = _markerList
 
     fun setCameraPermissionGranted(granted: Boolean) {
         _cameraPermissionGranted.value = granted
@@ -80,6 +70,54 @@ class myViewModel : ViewModel() {
 
     fun deleteUser(userId: String) {
         database.collection("users").document(userId).delete()
+    }
+
+    //--------------------marker----------------------
+
+    fun addMarker(marker: Marker) {
+        database.collection("marker")
+            .add(
+                hashMapOf(
+                    "title" to marker.title,
+                    "snippet" to marker.snippet,
+                    "longitud" to marker.longitud,
+                    "latitud" to marker.latitud
+                )
+            )
+    }
+
+    fun editMarker(editedMarker: Marker) {
+        database.collection("marker").document(editedMarker.title).set(
+            hashMapOf(
+                "title" to editedMarker.title,
+                "snippet" to editedMarker.snippet,
+                "longitud" to editedMarker.longitud,
+                "latitud" to editedMarker.latitud
+            )
+        )
+    }
+
+    fun deleteMarker(title: String) {
+        database.collection("marker").document(title).delete()
+    }
+
+    var repository = Repository()
+    fun getMarker() {
+        repository.getMarkers().addSnapshotListener{ value, error ->
+            if ( error!= null) {
+                Log.e("Firestore error", error.message.toString())
+                return@addSnapshotListener
+            }
+            val tempList = mutableListOf<Marker>()
+            for (dc: DocumentChange in value?.documentChanges!!) {
+                if (dc.type == DocumentChange.Type.ADDED) {
+                    val newMarker = dc.document.toObject(Marker::class.java)
+                    newMarker.title = dc.document.id
+                    tempList.add(newMarker)
+                }
+            }
+            _markerList.value = tempList
+        }
     }
 
 }
