@@ -3,6 +3,8 @@ package com.example.mapsappalexandru_smochina.view
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -45,6 +47,7 @@ fun TakePhoto_Screen(navigationController: NavHostController, viewModel: myViewM
             CameraController.IMAGE_CAPTURE
         }
     }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -77,8 +80,8 @@ fun TakePhoto_Screen(navigationController: NavHostController, viewModel: myViewM
                     Icon(imageVector = Icons.Default.Photo, contentDescription = "Open gallery")
                 }
                 IconButton(onClick = {
-                    takePhoto(context,controller) { photo ->
-
+                    takePhoto(context,controller,viewModel) { photo ->
+                        navigationController.navigateUp()
                     }
                 }) {
                     Icon(imageVector = Icons.Default.PhotoCamera, contentDescription = "Take photo")
@@ -88,13 +91,15 @@ fun TakePhoto_Screen(navigationController: NavHostController, viewModel: myViewM
     }
 }
 
-private fun takePhoto(context: Context, controller: LifecycleCameraController,onPhotoTake:(Bitmap) ->Unit) {
+private fun takePhoto(context: Context, controller: LifecycleCameraController, viewModel: myViewModel, onPhotoTake: (Bitmap) -> Unit) {
     controller.takePicture(
         ContextCompat.getMainExecutor(context),
         object : ImageCapture.OnImageCapturedCallback() {
             override fun onCaptureSuccess(image: ImageProxy) {
                 super.onCaptureSuccess(image)
-                onPhotoTake(image.toBitmap())
+                val bitmap = image.toBitmap()
+                viewModel.storePhoto(bitmap) // Almacenar la foto en el ViewModel
+                onPhotoTake(bitmap)
             }
 
             override fun onError(exception: ImageCaptureException) {

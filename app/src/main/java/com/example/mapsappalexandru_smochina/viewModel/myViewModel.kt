@@ -1,7 +1,9 @@
 package com.example.mapsappalexandru_smochina.viewModel
 
+import android.graphics.Bitmap
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -25,6 +27,12 @@ class myViewModel : ViewModel() {
 
     private val _showPermissionDenied = MutableLiveData(false)
     val showPermissionDenied = _showPermissionDenied
+
+    val takenPhoto = MutableLiveData<Bitmap?>(null)
+
+    fun storePhoto(photo: Bitmap) {
+        takenPhoto.value = photo
+    }
 
     private var position = LatLng(41.4534265, 2.1837151)
     fun changePosition(positionNueva: LatLng) {
@@ -93,6 +101,8 @@ class myViewModel : ViewModel() {
                     "latitud" to marker.latitud
                 )
             )
+
+        getMarker()
     }
 
     fun editMarker(editedMarker: Marker) {
@@ -104,6 +114,7 @@ class myViewModel : ViewModel() {
                 "latitud" to editedMarker.latitud
             )
         )
+        getMarker()
     }
 
     fun deleteMarker(title: String) {

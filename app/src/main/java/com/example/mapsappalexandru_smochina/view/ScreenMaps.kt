@@ -168,10 +168,9 @@ fun MyScaffold(
 ) {
     Column {
         MyTopAppBar(state = state)
-        BottomSheet(
-            viewModel = viewModel,
-            navigationController = navigationController,
-        )
+        MapScreen(viewModel = viewModel, navigationController = navigationController) {
+
+        }
     }
 }
 
@@ -198,13 +197,20 @@ fun MyTopAppBar(state: DrawerState) {
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("MissingPermission")
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
 fun MapScreen(
     viewModel: myViewModel,
+    navigationController: NavHostController,
     onMapLongClick: (LatLng) -> Unit // Función de devolución de llamada para el evento de mantener presionado
 ) {
+    val sheetState = rememberModalBottomSheetState()
+    val scope = rememberCoroutineScope()
+    var showBottomSheet by remember { mutableStateOf(false) }
+    var title by remember { mutableStateOf("") }
+    var snippet by remember { mutableStateOf("") }
     val context = LocalContext.current
     val fusedLocationProviderClient = remember { LocationServices.getFusedLocationProviderClient(context) }
     var lastKnownLocation by remember { mutableStateOf<Location?>(null) }
@@ -232,8 +238,8 @@ fun MapScreen(
         modifier = Modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState,
         onMapLongClick = {
-            onMapLongClick(it) // Llama a la función de devolución de llamada con las coordenadas
-            viewModel.changePosition(it) // Actualiza la posición en el ViewModel
+            viewModel.changePosition(it)
+            showBottomSheet = true
         },
         properties = MapProperties(
             isMyLocationEnabled = true,
@@ -248,20 +254,7 @@ fun MapScreen(
             )
         }
     }
-}
 
-@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun BottomSheet(
-    viewModel: myViewModel,
-    navigationController: NavHostController
-) {
-    val sheetState = rememberModalBottomSheetState()
-    val scope = rememberCoroutineScope()
-    var showBottomSheet by remember { mutableStateOf(false) }
-    var title by remember { mutableStateOf("") }
-    var snippet by remember { mutableStateOf("") }
 
     Scaffold(
         floatingActionButton = {
@@ -282,65 +275,62 @@ fun BottomSheet(
     ) { contentPadding ->
 
         Column(
-            modifier = Modifier.padding(contentPadding)
+            modifier = Modifier.padding(contentPadding),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            MapScreen(viewModel) {
-                viewModel.changePosition(it)
-                showBottomSheet = true
-            }
-        }
-
-        if (showBottomSheet) {
-            ModalBottomSheet(
-                onDismissRequest = {
-                    showBottomSheet = false
-                },
-                sheetState = sheetState
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+            if (showBottomSheet) {
+                ModalBottomSheet(
+                    onDismissRequest = {
+                        showBottomSheet = false
+                    },
+                    sheetState = sheetState
                 ) {
-                    TextField(
-                        value = title,
-                        onValueChange = { title = it },
-                        label = { Text("Title") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    TextField(
-                        value = snippet,
-                        onValueChange = { snippet = it },
-                        label = { Text("Snippet") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Button(onClick = { navigationController.navigate(Routes.ScreenCamera.route)}) {
-                        Icon(
-                            imageVector = Icons.Filled.CameraAlt,
-                            contentDescription = "camera",
-                            modifier = Modifier
-
-                        )
-                    }
-
-                    Button(
-                        onClick = {
-                            val latLng = viewModel.getPosition()
-                            // Agrega el marcador con las coordenadas almacenadas en markerLatLng y la información proporcionada
-                            viewModel.addMarker(com.example.mapsappalexandru_smochina.model.Marker(null,latLng.latitude, latLng.longitude, title, snippet))
-                            // Oculta el modal bottom sheet
-                            scope.launch { sheetState.hide() }.invokeOnCompletion {
-                                if (!sheetState.isVisible) {
-                                    showBottomSheet = false
-                                }
-                            }
-                        },
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("Add Marker")
+                        TextField(
+                            value = title,
+                            onValueChange = { title = it },
+                            label = { Text("Title") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        TextField(
+                            value = snippet,
+                            onValueChange = { snippet = it },
+                            label = { Text("Snippet") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Button(onClick = { navigationController.navigate(Routes.ScreenCamera.route)}) {
+                            Icon(
+                                imageVector = Icons.Filled.CameraAlt,
+                                contentDescription = "camera",
+                                modifier = Modifier
+
+                            )
+                        }
+
+                        Button(
+                            onClick = {
+                                val direcion = viewModel.getPosition()
+                                // Agrega el marcador con las coordenadas almacenadas en markerLatLng y la información proporcionada
+                                viewModel.addMarker(com.example.mapsappalexandru_smochina.model.Marker(null,direcion.latitude, direcion.longitude, title, snippet))
+                                // Oculta el modal bottom sheet
+                                scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                    if (!sheetState.isVisible) {
+                                        showBottomSheet = false
+                                    }
+                                }
+                            },
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        ) {
+                            Text("Add Marker")
+                        }
                     }
                 }
             }
         }
     }
 }
+
