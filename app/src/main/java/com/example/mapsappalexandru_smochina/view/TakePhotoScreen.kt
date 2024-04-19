@@ -2,6 +2,8 @@ package com.example.mapsappalexandru_smochina.view
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -36,8 +38,10 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavHostController
+import com.example.mapsappalexandru_smochina.R
 import com.example.mapsappalexandru_smochina.Routes
 import com.example.mapsappalexandru_smochina.viewModel.myViewModel
+import java.io.File
 
 @Composable
 fun TakePhoto_Screen(navigationController: NavHostController, viewModel: myViewModel) {
@@ -80,7 +84,7 @@ fun TakePhoto_Screen(navigationController: NavHostController, viewModel: myViewM
                     Icon(imageVector = Icons.Default.Photo, contentDescription = "Open gallery")
                 }
                 IconButton(onClick = {
-                    takePhoto(context,controller,viewModel) { photo ->
+                    takePhoto(context,controller,viewModel) { photo, uri ->
                         navigationController.navigateUp()
                     }
                 }) {
@@ -91,20 +95,26 @@ fun TakePhoto_Screen(navigationController: NavHostController, viewModel: myViewM
     }
 }
 
-private fun takePhoto(context: Context, controller: LifecycleCameraController, viewModel: myViewModel, onPhotoTake: (Bitmap) -> Unit) {
+private fun takePhoto(context: Context, controller: LifecycleCameraController, viewModel: myViewModel, onPhotoTake: (Bitmap, Uri) -> Unit) {
+    val outputDirectory = getOutputDirectory(context)
+    val photoFile = File(outputDirectory, "${System.currentTimeMillis()}.jpg")
+
+    val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+
     controller.takePicture(
+        outputOptions,
         ContextCompat.getMainExecutor(context),
-        object : ImageCapture.OnImageCapturedCallback() {
-            override fun onCaptureSuccess(image: ImageProxy) {
-                super.onCaptureSuccess(image)
-                val bitmap = image.toBitmap()
-                viewModel.storePhoto(bitmap) // Almacenar la foto en el ViewModel
-                onPhotoTake(bitmap)
+
+        object : ImageCapture.OnImageSavedCallback {
+            override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                val savedUri = Uri.fromFile(photoFile)
+                val bitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
+                viewModel.storePhoto(bitmap, savedUri)
+                onPhotoTake(bitmap, savedUri)
             }
 
             override fun onError(exception: ImageCaptureException) {
-                super.onError(exception)
-                Log.e("Camera","Error take photo", exception)
+                Log.e("Camera", "Error take photo", exception)
             }
         }
     )
@@ -121,4 +131,13 @@ fun CameraPreview(controller: LifecycleCameraController, modifier: Modifier = Mo
             }
         }, modifier = modifier
     )
+}
+
+private fun getOutputDirectory(context: Context): File {
+    val appContext = context.applicationContext
+    val mediaDir = context.externalMediaDirs.firstOrNull()?.let {
+        File(it, appContext.resources.getString(R.string.app_name)).apply { mkdirs() }
+    }
+    return if (mediaDir != null && mediaDir.exists())
+        mediaDir else appContext.filesDir
 }

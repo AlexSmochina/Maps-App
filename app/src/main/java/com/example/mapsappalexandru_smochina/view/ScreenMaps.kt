@@ -12,12 +12,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
@@ -43,6 +45,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -70,6 +73,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun Screen_Maps(navigationController: NavHostController, viewModel: myViewModel) {
+    val showLoading: Boolean by viewModel.loadingMaps.observeAsState(true)
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -79,7 +83,21 @@ fun Screen_Maps(navigationController: NavHostController, viewModel: myViewModel)
             permissionState.launchPermissionRequest()
         }
         if (permissionState.status.isGranted){
-            MyDrawer(viewModel,navigationController)
+            if (showLoading){
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.width(64.dp),
+                        color = Color(26, 11, 37, 255)
+                    )
+                }
+            }else{
+                MyDrawer(viewModel,navigationController)
+            }
         }else {
             Column(
                 modifier = Modifier
@@ -95,7 +113,9 @@ fun Screen_Maps(navigationController: NavHostController, viewModel: myViewModel)
                 ) {
                     Text(text = "No tienes permisos cabron mamon")
                     Button(
-                        onClick = {})
+                        onClick = {
+
+                        })
                     {
                         Text(text = "Para activar los permisos")
                     }
@@ -123,7 +143,7 @@ fun MyDrawer(
                 selected = false,
                 onClick = {
                     scope.launch {
-                        state.close()
+                        navigationController.navigate(Routes.ScreenMaps.route)
                     }
                 }
             )
@@ -168,7 +188,7 @@ fun MyScaffold(
 ) {
     Column {
         MyTopAppBar(state = state)
-        MapScreen(viewModel = viewModel, navigationController = navigationController) {
+        MapScreen(viewModel = viewModel, navigationController = navigationController){
 
         }
     }
@@ -204,11 +224,11 @@ fun MyTopAppBar(state: DrawerState) {
 fun MapScreen(
     viewModel: myViewModel,
     navigationController: NavHostController,
-    onMapLongClick: (LatLng) -> Unit // Función de devolución de llamada para el evento de mantener presionado
+    onMapLongClick: (LatLng) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
-    var showBottomSheet by remember { mutableStateOf(false) }
+    val showBottomSheet by viewModel.showBottomSheet.observeAsState(false)
     var title by remember { mutableStateOf("") }
     var snippet by remember { mutableStateOf("") }
     val context = LocalContext.current
@@ -302,7 +322,13 @@ fun MapScreen(
                             modifier = Modifier.fillMaxWidth()
                         )
 
-                        Button(onClick = { navigationController.navigate(Routes.ScreenCamera.route)}) {
+                        Button(
+                            onClick = {
+                                navigationController.navigate(Routes.ScreenCamera.route)
+                                viewModel.photoUri.value?.let { uri ->
+                                    viewModel.uploadImage(uri)
+                                }
+                        }) {
                             Icon(
                                 imageVector = Icons.Filled.CameraAlt,
                                 contentDescription = "camera",

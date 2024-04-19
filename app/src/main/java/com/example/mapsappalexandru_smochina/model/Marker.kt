@@ -5,7 +5,9 @@ data class Marker(
     var longitud: Double,
     var latitud: Double,
     var title: String,
-    var snippet: String
+    var snippet: String,
+    var picture: String? = null
+
 ){
-    constructor() : this(null,0.0,0.0,"","")
+    constructor() : this(null,0.0,0.0,"","", null)
 }

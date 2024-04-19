@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -39,6 +40,7 @@ fun Screen_Camera(navigationController: NavHostController, viewModel: myViewMode
     val isCameraPermissionGranted by viewModel.cameraPermissionGranted.observeAsState(false)
     val shouldShowPermissionRationale by viewModel.shouldShowPermissionRationale.observeAsState(false)
     val showPermissionDenied by viewModel.showPermissionDenied.observeAsState(false)
+    val previousBottomSheetState = viewModel.showBottomSheet.value
 
     // Obtiene la foto tomada del ViewModel
     val takenPhotoBitmap by viewModel.takenPhoto.observeAsState(null)
@@ -126,23 +128,4 @@ fun openAppSettings(activity: Activity) {
         flags = Intent.FLAG_ACTIVITY_NEW_TASK
     }
     activity.startActivity(intent)
-}
-
-fun rotateIfRequired(bitmap: Bitmap, path: String): Bitmap {
-    val ei = ExifInterface(path)
-    val orientation = ei.getAttributeInt(
-        ExifInterface.TAG_ORIENTATION,
-        ExifInterface.ORIENTATION_UNDEFINED
-    )
-
-    val rotatedBitmap: Bitmap
-    rotatedBitmap = when (orientation) {
-        ExifInterface.ORIENTATION_ROTATE_90 -> rotateImage(bitmap, 90)
-        ExifInterface.ORIENTATION_ROTATE_180 -> rotateImage(bitmap, 180)
-        ExifInterface.ORIENTATION_ROTATE_270 -> rotateImage(bitmap, 270)
-        ExifInterface.ORIENTATION_NORMAL -> bitmap
-        else -> bitmap
-    }
-
-    return rotatedBitmap
 }

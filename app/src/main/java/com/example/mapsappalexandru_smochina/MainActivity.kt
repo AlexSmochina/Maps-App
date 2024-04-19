@@ -70,7 +70,7 @@ class MainActivity : ComponentActivity() {
                         composable(Routes.ScreenListMaps.route) {
                             Screen_List_Maps(
                                 navigationController,
-                                viewModel
+                                viewModel,
                             )
                         }
                         composable(Routes.ScreenGallery.route) {
