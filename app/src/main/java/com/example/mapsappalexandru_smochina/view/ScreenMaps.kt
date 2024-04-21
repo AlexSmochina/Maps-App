@@ -83,21 +83,7 @@ fun Screen_Maps(navigationController: NavHostController, viewModel: myViewModel)
             permissionState.launchPermissionRequest()
         }
         if (permissionState.status.isGranted){
-            if (showLoading){
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.width(64.dp),
-                        color = Color(26, 11, 37, 255)
-                    )
-                }
-            }else{
                 MyDrawer(viewModel,navigationController)
-            }
         }else {
             Column(
                 modifier = Modifier
@@ -228,7 +214,7 @@ fun MapScreen(
 ) {
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
-    val showBottomSheet by viewModel.showBottomSheet.observeAsState(false)
+    var showBottomSheet by remember { mutableStateOf(false) }
     var title by remember { mutableStateOf("") }
     var snippet by remember { mutableStateOf("") }
     val context = LocalContext.current

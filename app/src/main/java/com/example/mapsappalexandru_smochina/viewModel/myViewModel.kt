@@ -13,6 +13,7 @@ import com.example.mapsappalexandru_smochina.model.Repository
 import com.example.mapsappalexandru_smochina.model.Usuario
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
@@ -23,6 +24,8 @@ import java.util.Date
 import java.util.Locale
 
 class myViewModel : ViewModel() {
+
+    // -------------------- TAKE FOTO AND TAKE URL --------------------
     private val _cameraPermissionGranted = MutableLiveData(false)
     val cameraPermissionGranted = _cameraPermissionGranted
 
@@ -31,37 +34,6 @@ class myViewModel : ViewModel() {
 
     private val _showPermissionDenied = MutableLiveData(false)
     val showPermissionDenied = _showPermissionDenied
-
-    private val _loadingMaps = MutableLiveData(true)
-    val loadingMaps = _loadingMaps
-
-    private val _showBottomSheet = MutableLiveData(false)
-    val showBottomSheet: LiveData<Boolean> = _showBottomSheet
-
-
-
-    private val _takenPhoto = MutableLiveData<Bitmap?>(null)
-    val takenPhoto: MutableLiveData<Bitmap?> = _takenPhoto
-
-    private val _photoUri = MutableLiveData<Uri?>(null)
-    val photoUri: MutableLiveData<Uri?> = _photoUri
-
-    fun storePhoto(photo: Bitmap, uri: Uri) {
-        _takenPhoto.value = photo
-        _photoUri.value = uri
-    }
-
-    private var position = LatLng(41.4534265, 2.1837151)
-    fun changePosition(positionNueva: LatLng) {
-        position = positionNueva
-    }
-
-    fun getPosition(): LatLng {
-        return position
-    }
-
-    private var _markerList = MutableLiveData<MutableList<Marker>>()
-    var markerList: LiveData<MutableList<Marker>> = _markerList
 
     fun setCameraPermissionGranted(granted: Boolean) {
         _cameraPermissionGranted.value = granted
@@ -74,39 +46,47 @@ class myViewModel : ViewModel() {
     fun setShowPermissionDenied(denied: Boolean) {
         _showPermissionDenied.value = denied
     }
+    // ----------------------------------------------------------------
 
-    //--------------------username----------------------
+    // -------------------- LOADING MAP --------------------
+    private val _loadingMaps = MutableLiveData(true)
+    val loadingMaps = _loadingMaps
+    // -----------------------------------------------------
 
+    // -------------------- SHOW BOTTOM SHEET --------------------
+    private val _showBottomSheet = MutableLiveData(false)
+    val showBottomSheet: LiveData<Boolean> = _showBottomSheet
+    // -----------------------------------------------------------
+
+    // -------------------- TAKE FOTO AND TAKE URL --------------------
+    private val _takenPhoto = MutableLiveData<Bitmap?>(null)
+    val takenPhoto: MutableLiveData<Bitmap?> = _takenPhoto
+
+    private val _photoUri = MutableLiveData<Uri?>(null)
+    val photoUri: MutableLiveData<Uri?> = _photoUri
+
+    fun storePhoto(photo: Bitmap, uri: Uri) {
+        _takenPhoto.value = photo
+        _photoUri.value = uri
+    }
+    // ----------------------------------------------------------------
+
+    // -------------------- TAKE POSITION --------------------
+    private var position = LatLng(41.4534265, 2.1837151)
+    fun changePosition(positionNueva: LatLng) {
+        position = positionNueva
+    }
+
+    fun getPosition(): LatLng {
+        return position
+    }
+    // -------------------------------------------------------
+
+    // -------------------- MARKER --------------------
     private val database = FirebaseFirestore.getInstance()
 
-    fun addUser(user: Usuario) {
-        database.collection("users")
-            .add(
-                hashMapOf(
-                    "name" to user.name,
-                    "userName" to user.userName,
-                    "mail" to user.mail,
-                    "password" to user.password
-                )
-            )
-    }
-
-    fun editUser(editedUser:Usuario) {
-        database.collection("users").document(editedUser.userId!!).set(
-            hashMapOf(
-                "name" to editedUser.name,
-                "userName" to editedUser.userName,
-                "mail" to editedUser.mail,
-                "password" to editedUser.password
-            )
-        )
-    }
-
-    fun deleteUser(userId: String) {
-        database.collection("users").document(userId).delete()
-    }
-
-    //--------------------marker----------------------
+    private var _markerList = MutableLiveData<MutableList<Marker>>()
+    var markerList: LiveData<MutableList<Marker>> = _markerList
 
     fun addMarker(marker: Marker) {
         database.collection("marker")
@@ -162,6 +142,47 @@ class myViewModel : ViewModel() {
             _markerList.value = tempList
         }
     }
+    // ------------------------------------------------
+
+    // -------------------- USER ----------------------
+    private var _goToNext = MutableLiveData(true)
+    val goToNext: LiveData<Boolean> = _goToNext
+
+    private val _processing = MutableLiveData<Boolean>()
+    val processing: LiveData<Boolean> = _processing
+
+    private fun modifyProcessing() {
+        _processing.value = false
+    }
+
+    private val auth = FirebaseAuth.getInstance()
+
+    fun addUser(user: Usuario) {
+        database.collection("users")
+            .add(
+                hashMapOf(
+                    "name" to user.name,
+                    "userName" to user.userName,
+                    "mail" to user.mail,
+                    "password" to user.password
+                )
+            )
+    }
+
+    fun editUser(editedUser:Usuario) {
+        database.collection("users").document(editedUser.userId!!).set(
+            hashMapOf(
+                "name" to editedUser.name,
+                "userName" to editedUser.userName,
+                "mail" to editedUser.mail,
+                "password" to editedUser.password
+            )
+        )
+    }
+
+    fun deleteUser(userId: String) {
+        database.collection("users").document(userId).delete()
+    }
 
     fun uploadImage(imageUri: Uri) {
         val formatter = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.getDefault())
@@ -179,5 +200,20 @@ class myViewModel : ViewModel() {
                 Log.i("IMAGE UPLOAD","Image upload successfully")
             }
     }
+
+    fun register(username: String, password: String) {
+        _processing.value = true
+        auth.createUserWithEmailAndPassword(username, password)
+            .addOnCompleteListener { task->
+                if (task.isSuccessful) {
+                    _goToNext.value = true
+                } else {
+                    _goToNext.value = false
+                }
+                modifyProcessing()
+            }
+    }
+    // ------------------------------------------------
+
 
 }

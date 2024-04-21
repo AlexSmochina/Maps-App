@@ -27,16 +27,18 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.mapsappalexandru_smochina.R
 import com.example.mapsappalexandru_smochina.Routes
+import com.example.mapsappalexandru_smochina.model.Usuario
 import com.example.mapsappalexandru_smochina.viewModel.myViewModel
 
 @Composable
 fun Screen_Sign_Up(navigationController: NavHostController, viewModel: myViewModel) {
 
     var nombre by remember { mutableStateOf("") }
-    var appelido by remember { mutableStateOf("") }
-    var user by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var userName by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var verifyPassword by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -56,18 +58,18 @@ fun Screen_Sign_Up(navigationController: NavHostController, viewModel: myViewMod
 
         Spacer(modifier = Modifier.padding(5.dp))
 
-        TextField(value = appelido,
-            onValueChange ={appelido= it},
-            label = { Text(text = "Email address")
-            }
+        TextField(
+            value = userName,
+            onValueChange ={ userName = it},
+            label = { Text(text = "Username") }
         )
 
         Spacer(modifier = Modifier.padding(5.dp))
 
-        TextField(
-            value = user,
-            onValueChange ={ user = it},
-            label = { Text(text = "Username") }
+        TextField(value = email,
+            onValueChange ={email= it},
+            label = { Text(text = "Email address")
+            }
         )
         Spacer(modifier = Modifier.padding(5.dp))
 
@@ -87,10 +89,24 @@ fun Screen_Sign_Up(navigationController: NavHostController, viewModel: myViewMod
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
         )
 
+        if (errorMessage.isNotEmpty()) {
+            Text(text = errorMessage, color = Color.Red)
+            Spacer(modifier = Modifier.padding(5.dp))
+        }
+
         Spacer(modifier = Modifier.padding(5.dp))
 
         Button(
-            onClick = {navigationController.navigate(Routes.ScreenLogin.route)}
+            onClick = {
+                if (password == verifyPassword){
+                    viewModel.addUser(Usuario(null,nombre,userName,email,password))
+                    viewModel.register(email,password)
+                    navigationController.navigate(Routes.ScreenLogin.route)
+                }else{
+                    errorMessage = "Las contraseñas no coinciden"
+                }
+
+            }
         ) {
             Text(text = "Register", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
         }
