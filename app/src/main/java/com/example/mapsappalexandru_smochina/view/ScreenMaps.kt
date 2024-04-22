@@ -223,6 +223,11 @@ fun MapScreen(
     var deviceLatLng by remember { mutableStateOf(LatLng(0.0,0.0)) }
     val marker by viewModel.markerList.observeAsState(emptyList())
     viewModel.getMarker()
+
+    if (!viewModel.userLogged()){
+        viewModel.signOut(context = LocalContext.current, navigationController)
+    }
+
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(deviceLatLng, 18f)
     }

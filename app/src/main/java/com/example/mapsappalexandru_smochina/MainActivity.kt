@@ -19,6 +19,7 @@ import com.example.mapsappalexandru_smochina.view.Screen_Gallery
 import com.example.mapsappalexandru_smochina.view.Screen_List_Maps
 import com.example.mapsappalexandru_smochina.view.Screen_Login
 import com.example.mapsappalexandru_smochina.view.Screen_Maps
+import com.example.mapsappalexandru_smochina.view.Screen_Menu
 import com.example.mapsappalexandru_smochina.view.Screen_Sign_Up
 import com.example.mapsappalexandru_smochina.view.TakePhoto_Screen
 import com.example.mapsappalexandru_smochina.viewModel.myViewModel
@@ -75,6 +76,12 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(Routes.ScreenGallery.route) {
                             Screen_Gallery(
+                                navigationController,
+                                viewModel
+                            )
+                        }
+                        composable(Routes.ScreenMenu.route) {
+                            Screen_Menu(
                                 navigationController,
                                 viewModel
                             )

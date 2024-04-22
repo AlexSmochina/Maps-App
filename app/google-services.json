@@ -12,7 +12,20 @@
           "package_name": "com.example.mapsappalexandru_smochina"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "556322939575-94ksldidhndn4lvugcgnr84t90gme8gl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.mapsappalexandru_smochina",
+            "certificate_hash": "5a930427bd4bcd1081a6eb6a8b36271c89933609"
+          }
+        },
+        {
+          "client_id": "556322939575-5utrpu3cio0v06ihvkf4odkqpdf9plvl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAbjs5PnNk6bQ_IED1jIYyQv5zZkPox_3s"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "556322939575-5utrpu3cio0v06ihvkf4odkqpdf9plvl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

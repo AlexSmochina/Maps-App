@@ -104,6 +104,8 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
     //FOTO
     implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
+    //DATA STORE
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
 }
 
 secrets {
