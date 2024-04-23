@@ -9,6 +9,8 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -31,6 +33,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -51,6 +54,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.mapsappalexandru_smochina.MainActivity
@@ -62,6 +66,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.Marker
@@ -70,180 +75,99 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+@SuppressLint("MissingPermission")
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun Screen_Maps(navigationController: NavHostController, viewModel: myViewModel) {
-    val showLoading: Boolean by viewModel.loadingMaps.observeAsState(true)
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        val permissionState = rememberPermissionState(permission = Manifest.permission.ACCESS_FINE_LOCATION)
-        LaunchedEffect(Unit) {
-            permissionState.launchPermissionRequest()
-        }
-        if (permissionState.status.isGranted){
-                MyDrawer(viewModel,navigationController)
-        }else {
+    MyDrawer(
+        viewModel = viewModel,
+        navigationController = navigationController,
+        content = {
             Column(
                 modifier = Modifier
                     .fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ){
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(text = "No tienes permisos cabron mamon")
-                    Button(
-                        onClick = {
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {  val context = LocalContext.current
 
-                        })
-                    {
-                        Text(text = "Para activar los permisos")
+                val fusedLocationProviderClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+                var lastKnownLocation by remember { mutableStateOf<Location?>(null) }
+                var deviceLatLng by remember { mutableStateOf(LatLng(0.0,0.0)) }
+                viewModel.getMarker()
+
+                val cameraPositionState = rememberCameraPositionState {
+                    position = CameraPosition.fromLatLngZoom(deviceLatLng, 18f)
+                }
+                val locationResult = fusedLocationProviderClient.getCurrentLocation(100, null)
+                locationResult.addOnCompleteListener(context as MainActivity) { task ->
+                    if (task.isSuccessful) {
+                        lastKnownLocation = task.result
+                        deviceLatLng =
+                            LatLng(lastKnownLocation!!.latitude, lastKnownLocation!!.longitude)
+                        cameraPositionState.position =
+                            CameraPosition.fromLatLngZoom(deviceLatLng, 13f)
+                        viewModel.changePosition(deviceLatLng)
+                    } else {
+                        Log.e("Error", "Exception: %s", task.exception)
                     }
                 }
-            }
-        }
-    }
-}
 
-@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-@SuppressLint("CoroutineCreationDuringComposition")
-@Composable
-fun MyDrawer(
-    viewModel: myViewModel,
-    navigationController: NavHostController
-) {
-    val scope = rememberCoroutineScope()
-    val state: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    ModalNavigationDrawer(drawerState = state, gesturesEnabled = false, drawerContent = {
-        ModalDrawerSheet {
-            Text(text = "Drawer title", modifier = Modifier.padding(16.dp))
-            Divider()
-            NavigationDrawerItem(
-                label = { Text(text = "Mapa") },
-                selected = false,
-                onClick = {
-                    scope.launch {
-                        navigationController.navigate(Routes.ScreenMaps.route)
-                    }
+                val permissionState = rememberPermissionState(permission = Manifest.permission.ACCESS_FINE_LOCATION)
+                LaunchedEffect(Unit) {
+                    permissionState.launchPermissionRequest()
                 }
-            )
-            NavigationDrawerItem(
-                label = { Text(text = "Lista marcadores") },
-                selected = false,
-                onClick = {
-                    navigationController.navigate(Routes.ScreenListMaps.route)
-                }
-            )
-            Column (
-                modifier = Modifier
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ){
-                Button(
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Red,
-                        contentColor = Color.White
-                    ),
-                    onClick = {
-                        scope.launch {
-                            state.close()
+                if (permissionState.status.isGranted){
+                    MapScreen(viewModel,navigationController,cameraPositionState)
+                }else {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ){
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(text = "No tienes permisos cabron mamon")
+                            Button(
+                                onClick = {
+
+                                })
+                            {
+                                Text(text = "Para activar los permisos")
+                            }
                         }
-                    }) {
-                    Text(text = "Volver")
+                    }
                 }
-            }
-        }
-    }) {
-        MyScaffold(viewModel,state, navigationController)
-    }
-}
-
-@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-@Composable
-fun MyScaffold(
-    viewModel: myViewModel,
-    state: DrawerState,
-    navigationController: NavHostController
-) {
-    Column {
-        MyTopAppBar(state = state)
-        MapScreen(viewModel = viewModel, navigationController = navigationController){
-
-        }
-    }
-}
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MyTopAppBar(state: DrawerState) {
-    val scope = rememberCoroutineScope()
-    TopAppBar(
-        title = { Text(text = "Maps APP") },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.Red,
-            titleContentColor = Color.White
-        ),
-        navigationIcon = {
-            IconButton(onClick = {
-                scope.launch {
-                    state.open()
-                }
-            }) {
-                Icon(imageVector = Icons.Filled.Menu, contentDescription = "Menu")
             }
         }
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("MissingPermission")
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
 fun MapScreen(
     viewModel: myViewModel,
     navigationController: NavHostController,
-    onMapLongClick: (LatLng) -> Unit
+    cameraPositionState: CameraPositionState
 ) {
-    val sheetState = rememberModalBottomSheetState()
-    val scope = rememberCoroutineScope()
-    var showBottomSheet by remember { mutableStateOf(false) }
-    var title by remember { mutableStateOf("") }
-    var snippet by remember { mutableStateOf("") }
-    val context = LocalContext.current
-    val fusedLocationProviderClient = remember { LocationServices.getFusedLocationProviderClient(context) }
-    var lastKnownLocation by remember { mutableStateOf<Location?>(null) }
-    var deviceLatLng by remember { mutableStateOf(LatLng(0.0,0.0)) }
-    val marker by viewModel.markerList.observeAsState(emptyList())
     viewModel.getMarker()
 
     if (!viewModel.userLogged()){
         viewModel.signOut(context = LocalContext.current, navigationController)
     }
 
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(deviceLatLng, 18f)
-    }
-    val locationResult = fusedLocationProviderClient.getCurrentLocation(100, null)
-    locationResult.addOnCompleteListener(context as MainActivity) { task ->
-        if (task.isSuccessful) {
-            lastKnownLocation = task.result
-            deviceLatLng =
-                LatLng(lastKnownLocation!!.latitude, lastKnownLocation!!.longitude)
-            cameraPositionState.position =
-                CameraPosition.fromLatLngZoom(deviceLatLng, 13f)
-            viewModel.changePosition(deviceLatLng)
-        } else {
-            Log.e("Error", "Exception: %s", task.exception)
-        }
-    }
+    val sheetState = rememberModalBottomSheetState()
+    val scope = rememberCoroutineScope()
+    var showBottomSheet by remember { mutableStateOf(false) }
+    var title by remember { mutableStateOf("") }
+    var snippet by remember { mutableStateOf("") }
+    val marker by viewModel.markerList.observeAsState(emptyList())
+
 
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
@@ -265,7 +189,6 @@ fun MapScreen(
             )
         }
     }
-
 
     Scaffold(
         floatingActionButton = {
@@ -332,7 +255,7 @@ fun MapScreen(
                             onClick = {
                                 val direcion = viewModel.getPosition()
                                 // Agrega el marcador con las coordenadas almacenadas en markerLatLng y la información proporcionada
-                                viewModel.addMarker(com.example.mapsappalexandru_smochina.model.Marker(null,direcion.latitude, direcion.longitude, title, snippet))
+                                viewModel.addMarker(com.example.mapsappalexandru_smochina.model.Marker(null,viewModel.getLoggedUser(),direcion.latitude, direcion.longitude,title, snippet))
                                 // Oculta el modal bottom sheet
                                 scope.launch { sheetState.hide() }.invokeOnCompletion {
                                     if (!sheetState.isVisible) {

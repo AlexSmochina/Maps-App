@@ -34,6 +34,13 @@ import java.util.Locale
 
 class myViewModel : ViewModel() {
 
+    val icons = listOf(
+        "baseline_park_24",
+        "baseline_school_24",
+        "baseline_restaurant_24",
+        "baseline_shopping_cart_24"
+    )
+
     // -------------------- TAKE FOTO AND TAKE URL --------------------
     private val _cameraPermissionGranted = MutableLiveData(false)
     val cameraPermissionGranted = _cameraPermissionGranted
@@ -101,6 +108,7 @@ class myViewModel : ViewModel() {
         database.collection("marker")
             .add(
                 hashMapOf(
+                    "owner" to _loggedUser.value,
                     "title" to marker.title,
                     "snippet" to marker.snippet,
                     "imagen" to marker.picture,
@@ -131,7 +139,9 @@ class myViewModel : ViewModel() {
 
     var repository = Repository()
     fun getMarker() {
-        repository.getMarkers().addSnapshotListener{ value, error ->
+        repository.getMarkers()
+            .whereEqualTo("owner", _loggedUser.value)
+            .addSnapshotListener{ value, error ->
             if ( error!= null) {
                 Log.e("Firestore error", error.message.toString())
                 return@addSnapshotListener
@@ -244,29 +254,6 @@ class myViewModel : ViewModel() {
 
     private val auth = FirebaseAuth.getInstance()
 
-    fun addUser(user: Usuario) {
-        database.collection("users")
-            .add(
-                hashMapOf(
-                    "name" to user.name,
-                    "userName" to user.userName,
-                    "mail" to user.mail,
-                    "password" to user.password
-                )
-            )
-    }
-
-    fun editUser(editedUser:Usuario) {
-        database.collection("users").document(editedUser.userId!!).set(
-            hashMapOf(
-                "name" to editedUser.name,
-                "userName" to editedUser.userName,
-                "mail" to editedUser.mail,
-                "password" to editedUser.password
-            )
-        )
-    }
-
     fun deleteUser(userId: String) {
         database.collection("users").document(userId).delete()
     }
@@ -293,6 +280,8 @@ class myViewModel : ViewModel() {
         auth.createUserWithEmailAndPassword(username, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+                    _userId.value = task.result.user?.uid
+                    _loggedUser.value = task.result.user?.email
                     _goToNext.value = true
                     modifyProcessing(false)
                     CoroutineScope(Dispatchers.IO).launch {
@@ -310,7 +299,6 @@ class myViewModel : ViewModel() {
                                             "owner" to _loggedUser.value,
                                             "name" to _nombreState.value,
                                             "userName" to _userNameState.value,
-                                            // "password" to usuari.password (es logico guardar la contraseña rarete, no?)
                                         )
                                     )
                             }
@@ -419,6 +407,10 @@ class myViewModel : ViewModel() {
         return auth.currentUser != null
     }
     // ------------------------------------------------
+    val screen = mutableStateOf("Unknown")
 
+    fun setScreen(screenName: String) {
+        screen.value = screenName
+    }
 
 }

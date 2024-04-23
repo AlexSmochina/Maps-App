@@ -2,6 +2,7 @@ package com.example.mapsappalexandru_smochina.model
 
 data class Marker(
     var markerId:String?,
+    var owner: String?,
     var longitud: Double,
     var latitud: Double,
     var title: String,
@@ -9,5 +10,5 @@ data class Marker(
     var picture: String? = null
 
 ){
-    constructor() : this(null,0.0,0.0,"","", null)
+    constructor() : this(null,null,0.0,0.0,"","", null)
 }

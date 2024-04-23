@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
@@ -31,8 +32,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -61,9 +64,15 @@ fun Screen_Login(navigationController: NavHostController, viewModel: myViewModel
     val context = LocalContext.current
     val userPrefs = UserPrefs(context)
     val storedUserData = userPrefs.getUserData.collectAsState(initial = emptyList())
+
     val validLogin: Boolean by viewModel.validLogin.observeAsState(true)
     val goToNext: Boolean by viewModel.goToNext.observeAsState(false)
     val permanecerLogged: Boolean by viewModel.permanecerLogged.observeAsState(false)
+    val showDialogPass: Boolean by viewModel.showDialogPass.observeAsState(false)
+    val passwordProblem: Boolean by viewModel.passwordProblem.observeAsState(false)
+    val showDialogAuth: Boolean by viewModel.showDialogAuth.observeAsState(false)
+    val emailProblem: Boolean by viewModel.emailDuplicated.observeAsState(false)
+    val keyboardController = LocalSoftwareKeyboardController.current
     val token = "556322939575-5utrpu3cio0v06ihvkf4odkqpdf9plvl.apps.googleusercontent.com"
 
     val launcher =
@@ -89,6 +98,10 @@ fun Screen_Login(navigationController: NavHostController, viewModel: myViewModel
             }
         }
 
+    if (storedUserData.value.isNotEmpty() && storedUserData.value[0] != ""){
+        viewModel.modificarEmailState(storedUserData.value[0])
+    }
+
     val opciones = GoogleSignInOptions
         .Builder(
             GoogleSignInOptions.DEFAULT_SIGN_IN
@@ -106,10 +119,6 @@ fun Screen_Login(navigationController: NavHostController, viewModel: myViewModel
         if (goToNext) {
             navigationController.navigate(Routes.ScreenMaps.route)
         }
-    } else if (storedUserData.value.isNotEmpty() && storedUserData.value[0] != "") {
-        viewModel.modifyProcessing(false)
-        launcher.launch(googleSignInCliente.signInIntent)
-
     }
 
     Column(
@@ -124,7 +133,12 @@ fun Screen_Login(navigationController: NavHostController, viewModel: myViewModel
         TextField(
             value = emailState,
             onValueChange ={ viewModel.modificarEmailState(it)},
-            label = { Text(text = "Mail")}
+            label = { Text(text = "Mail")},
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(onNext = { keyboardController?.hide() })
         )
         Spacer(modifier = Modifier.padding(5.dp))
 
@@ -196,6 +210,15 @@ fun Screen_Login(navigationController: NavHostController, viewModel: myViewModel
             Text(text = "Login con Google", fontSize = 18.sp, modifier = Modifier.padding(end = 10.dp))
         }
     }
+    MyDialogPasswordOrEmail(
+        showDialogPass,
+        passwordProblem
+    ) { viewModel.modificarShowDialogPass(false) }
+
+    MyDialogPasswordAuth(
+        showDialogAuth,
+        emailProblem
+    ) { viewModel.modificarShowDialogAuth(false) }
 }
 
 @Composable
