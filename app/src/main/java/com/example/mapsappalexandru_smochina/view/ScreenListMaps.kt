@@ -23,10 +23,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,6 +45,13 @@ import com.example.mapsappalexandru_smochina.viewModel.myViewModel
 @Composable
 fun Screen_List_Maps(navigationController: NavHostController, viewModel: myViewModel) {
     val markers by viewModel.markerList.observeAsState(emptyList())
+
+    var selectedIcon by remember { mutableStateOf("mundo") }
+
+    LaunchedEffect(selectedIcon) {
+        viewModel.getMarkerCategory(selectedIcon)
+    }
+
     if (!viewModel.userLogged()) {
         viewModel.signOut(context = LocalContext.current, navigationController)
     }
@@ -49,21 +59,50 @@ fun Screen_List_Maps(navigationController: NavHostController, viewModel: myViewM
     MyDrawer(viewModel = viewModel, navigationController = navigationController) {
         Column(
             modifier = Modifier
-                .background(Color(20, 169, 242))
+                .background(Color(22, 164, 235))
                 .fillMaxSize()
         ) {
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row (
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Icon: ", fontWeight = FontWeight.Bold, color = Color.Black)
+                viewModel.icons.forEach { icon ->
+                    val vectorName = icon
+                    val context = LocalContext.current
+                    val vectorId = context.resources.getIdentifier(vectorName, "drawable", context.packageName)
+                    val vectorResource = painterResource(id = vectorId)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
+                        painter = vectorResource,
+                        contentDescription = "Icon",
+                        modifier = Modifier.size(25.dp)
+                    )
+                    RadioButton(
+                        selected = (icon == selectedIcon),
+                        onClick = { selectedIcon = icon },
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
 
             LazyColumn(
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(markers) { marker ->
-                    MarkerItem(marker = marker,viewModel)
+                    if (marker.category == selectedIcon) {
+                        MarkerItem(marker = marker, viewModel)
+                    }
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun MarkerItem(marker: Marker, viewModel: myViewModel) {

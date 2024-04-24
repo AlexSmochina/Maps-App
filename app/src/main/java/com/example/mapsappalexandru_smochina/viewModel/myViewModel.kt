@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
@@ -36,7 +37,7 @@ class myViewModel : ViewModel() {
 
     val icons = listOf(
         "mundo",
-        "carrito_de_compra_anadir",
+        "carrito_de_compras",
         "futbol",
         "hogar"
     )
@@ -168,7 +169,7 @@ class myViewModel : ViewModel() {
     fun getMarkerCategory(category:String) {
         repository.getMarkers()
             .whereEqualTo("owner", _loggedUser.value)
-            .whereEqualTo("categoryName", category)
+            .whereEqualTo("category", category)
             .addSnapshotListener{ value, error ->
                 if ( error!= null) {
                     Log.e("Firestore error", error.message.toString())
@@ -249,33 +250,33 @@ class myViewModel : ViewModel() {
     private val _passwordProblem = MutableLiveData<Boolean>()
     val passwordProblem: LiveData<Boolean> = _passwordProblem
 
-    fun cambiarPermanecerLogged(nuevoBoolean: Boolean) {
+    fun modifyPermanecerLogged(nuevoBoolean: Boolean) {
         _permanecerLogged.value = nuevoBoolean
     }
-    fun modificarShowDialogPass(value: Boolean) {
+    fun modifyShowDialogPass(value: Boolean) {
         _showDialogPass.value = value
     }
 
-    fun modificarPasswordProblem(value: Boolean) {
+    fun modifyPasswordProblem(value: Boolean) {
         _passwordProblem.value = value
     }
     fun modifyProcessing(newValue: Boolean) {
         _processing.value = newValue
     }
 
-    fun modificarEmailState(value: String) {
+    fun modifyEmailState(value: String) {
         _emailState.value = value
     }
 
-    fun modificarPasswordState(value: String) {
+    fun modifyPasswordState(value: String) {
         _passwordState.value = value
     }
 
-    fun modificarNombreState(value: String) {
+    fun modifyNameState(value: String) {
         _nombreState.value = value
     }
 
-    fun modificarUserNameState(value: String) {
+    fun modifyUserNameState(value: String) {
         _userNameState.value = value
     }
 

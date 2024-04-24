@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
@@ -99,7 +100,7 @@ fun Screen_Login(navigationController: NavHostController, viewModel: myViewModel
         }
 
     if (storedUserData.value.isNotEmpty() && storedUserData.value[0] != ""){
-        viewModel.modificarEmailState(storedUserData.value[0])
+        viewModel.modifyEmailState(storedUserData.value[0])
     }
 
     val opciones = GoogleSignInOptions
@@ -132,7 +133,7 @@ fun Screen_Login(navigationController: NavHostController, viewModel: myViewModel
 
         TextField(
             value = emailState,
-            onValueChange ={ viewModel.modificarEmailState(it)},
+            onValueChange ={ viewModel.modifyEmailState(it)},
             label = { Text(text = "Mail")},
             keyboardOptions = KeyboardOptions.Default.copy(
                 keyboardType = KeyboardType.Email,
@@ -143,7 +144,7 @@ fun Screen_Login(navigationController: NavHostController, viewModel: myViewModel
         Spacer(modifier = Modifier.padding(5.dp))
 
         TextField(value =passwordState,
-            onValueChange = {viewModel.modificarPasswordState(it)},
+            onValueChange = {viewModel.modifyPasswordState(it)},
             label = { Text(text = "Enter password")},
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
@@ -160,7 +161,7 @@ fun Screen_Login(navigationController: NavHostController, viewModel: myViewModel
             Checkbox(
                 checked = permanecerLogged,
                 onCheckedChange = { isChecked ->
-                    viewModel.cambiarPermanecerLogged(isChecked)
+                    viewModel.modifyPermanecerLogged(isChecked)
                 })
             Spacer(modifier = Modifier.width(5.dp))
         }
@@ -168,8 +169,8 @@ fun Screen_Login(navigationController: NavHostController, viewModel: myViewModel
         Button(
             onClick = {
                 if (passwordState.length < 6) {
-                viewModel.modificarShowDialogPass(true)
-                viewModel.modificarPasswordProblem(true)
+                viewModel.modifyShowDialogPass(true)
+                viewModel.modifyPasswordProblem(true)
             } else if (emailState.contains("@")) {
                 viewModel.login(emailState, passwordState)
                 if (permanecerLogged) {
@@ -178,8 +179,8 @@ fun Screen_Login(navigationController: NavHostController, viewModel: myViewModel
                     }
                 }
             } else {
-                viewModel.modificarPasswordProblem(false)
-                viewModel.modificarShowDialogPass(true)
+                viewModel.modifyPasswordProblem(false)
+                viewModel.modifyShowDialogPass(true)
             }}
         ) {
             Text(text = "Login", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
@@ -213,7 +214,7 @@ fun Screen_Login(navigationController: NavHostController, viewModel: myViewModel
     MyDialogPasswordOrEmail(
         showDialogPass,
         passwordProblem
-    ) { viewModel.modificarShowDialogPass(false) }
+    ) { viewModel.modifyShowDialogPass(false) }
 
     MyDialogPasswordAuth(
         showDialogAuth,
@@ -222,49 +223,69 @@ fun Screen_Login(navigationController: NavHostController, viewModel: myViewModel
 }
 
 @Composable
-fun MyDialogPasswordOrEmail(show: Boolean, password: Boolean, onDismiss: () -> Unit) {
-    if (show) {
-        Dialog(onDismissRequest = { onDismiss() }) {
-            Column(
-                Modifier
-                    .background(Color.White)
-                    .padding(24.dp)
-                    .fillMaxWidth()
-            ) {
-                if (password) {
-                    Text(text = "La contraseña debe ser mínimo de 6 caracteres")
-                } else {
-                    Text(text = "El email es irróneo, necesitas mínimo el @")
+fun MyDialogPasswordOrEmail(showDialog: Boolean, isPasswordError: Boolean, onDismiss: () -> Unit) {
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { onDismiss() },
+            title = {
+                Text(text = "Aviso")
+            },
+            text = {
+                Column(
+
+                ) {
+                    if (isPasswordError) {
+                        Text(text = "La contraseña debe tener mínimo 6 caracteres")
+                    } else {
+                        Text(text = "El email es incorrecto. Debe contener al menos un @")
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { onDismiss() }
+                ) {
+                    Text(text = "Aceptar")
                 }
             }
-        }
+        )
     }
 }
 
 @Composable
-fun MyDialogPasswordAuth(show: Boolean, emailProblem: Boolean, onDismiss: () -> Unit) {
-    if (show) {
-        Dialog(onDismissRequest = { onDismiss() }) {
-            Column(
-                Modifier
-                    .background(Color.White)
-                    .padding(24.dp)
-                    .fillMaxWidth()
-            ) {
-                if (emailProblem) {
-                    Text(
-                        text = "Email ya registrado!!",
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                } else {
-                    Text(
-                        text = "Credenciales incorrectas",
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+fun MyDialogPasswordAuth(showDialog: Boolean, isEmailProblem: Boolean, onDismiss: () -> Unit) {
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { onDismiss() },
+            title = {
+                Text(
+                    text = if (isEmailProblem) "Error de autenticación" else "Error de email"
+                )
+            },
+            text = {
+                Column(
+
+                ) {
+                    if (isEmailProblem) {
+                        Text(
+                            text = "¡El email ya está registrado!",
+                            textAlign = TextAlign.Center,
+                        )
+                    } else {
+                        Text(
+                            text = "El correo electrónico es incorrecto o la contraseña es incorrecta",
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { onDismiss() }
+                ) {
+                    Text(text = "Aceptar")
                 }
             }
-        }
+        )
     }
 }

@@ -250,6 +250,7 @@ fun MapScreen(
                             }
                         }
 
+                        // NO FUNCIONA
                         Button(
                             modifier = Modifier
                                 .align(Alignment.CenterHorizontally),

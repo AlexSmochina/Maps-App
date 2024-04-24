@@ -96,7 +96,7 @@ fun Screen_Sign_Up(navigationController: NavHostController, viewModel: myViewMod
 
             TextField(
                 value = nombreState,
-                onValueChange = { viewModel.modificarNombreState(it) },
+                onValueChange = { viewModel.modifyNameState(it) },
                 label = {
                     Text(text = "Full name")
                 }
@@ -106,14 +106,14 @@ fun Screen_Sign_Up(navigationController: NavHostController, viewModel: myViewMod
 
             TextField(
                 value = userNameState,
-                onValueChange = { viewModel.modificarUserNameState(it) },
+                onValueChange = { viewModel.modifyUserNameState(it) },
                 label = { Text(text = "Username") }
             )
 
             Spacer(modifier = Modifier.padding(5.dp))
 
             TextField(value = emailState,
-                onValueChange = { viewModel.modificarEmailState(it) },
+                onValueChange = { viewModel.modifyEmailState(it) },
                 label = {
                     Text(text = "Email address")
                 }
@@ -122,7 +122,7 @@ fun Screen_Sign_Up(navigationController: NavHostController, viewModel: myViewMod
 
             TextField(
                 value = passwordState,
-                onValueChange = { viewModel.modificarPasswordState(it) },
+                onValueChange = { viewModel.modifyPasswordState(it) },
                 label = { Text(text = "Enter password") },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
@@ -139,7 +139,7 @@ fun Screen_Sign_Up(navigationController: NavHostController, viewModel: myViewMod
                 Checkbox(
                     checked = permanecerLogged,
                     onCheckedChange = { isChecked ->
-                        viewModel.cambiarPermanecerLogged(isChecked)
+                        viewModel.modifyPermanecerLogged(isChecked)
                     })
                 Spacer(modifier = Modifier.width(8.dp))
             }
@@ -147,8 +147,8 @@ fun Screen_Sign_Up(navigationController: NavHostController, viewModel: myViewMod
             Button(
                 onClick = {
                     if (passwordState.length < 6) {
-                        viewModel.modificarShowDialogPass(true)
-                        viewModel.modificarPasswordProblem(true)
+                        viewModel.modifyShowDialogPass(true)
+                        viewModel.modifyPasswordProblem(true)
                     } else if (emailState.contains("@")) {
                         if (permanecerLogged) {
                             CoroutineScope(Dispatchers.IO).launch {
@@ -157,8 +157,8 @@ fun Screen_Sign_Up(navigationController: NavHostController, viewModel: myViewMod
                         }
                         viewModel.register(context, emailState, passwordState)
                     } else {
-                        viewModel.modificarPasswordProblem(false)
-                        viewModel.modificarShowDialogPass(true)
+                        viewModel.modifyPasswordProblem(false)
+                        viewModel.modifyShowDialogPass(true)
                     }
                 }
             ) {
@@ -172,7 +172,7 @@ fun Screen_Sign_Up(navigationController: NavHostController, viewModel: myViewMod
             MyDialogPasswordOrEmail(
                 showDialogPass,
                 passwordProblem
-            ) { viewModel.modificarShowDialogPass(false) }
+            ) { viewModel.modifyShowDialogPass(false) }
 
             MyDialogPasswordAuth(
                 showDialogAuth,
