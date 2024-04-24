@@ -35,10 +35,10 @@ import java.util.Locale
 class myViewModel : ViewModel() {
 
     val icons = listOf(
-        "baseline_park_24",
-        "baseline_school_24",
-        "baseline_restaurant_24",
-        "baseline_shopping_cart_24"
+        "mundo",
+        "carrito_de_compra_anadir",
+        "futbol",
+        "hogar"
     )
 
     // -------------------- TAKE FOTO AND TAKE URL --------------------
@@ -111,9 +111,9 @@ class myViewModel : ViewModel() {
                     "owner" to _loggedUser.value,
                     "title" to marker.title,
                     "snippet" to marker.snippet,
-                    "imagen" to marker.picture,
                     "longitud" to marker.longitud,
-                    "latitud" to marker.latitud
+                    "latitud" to marker.latitud,
+                    "category" to marker.category
                 )
             )
 
@@ -125,9 +125,9 @@ class myViewModel : ViewModel() {
             hashMapOf(
                 "title" to editedMarker.title,
                 "snippet" to editedMarker.snippet,
-                "imagen" to editedMarker.picture,
                 "longitud" to editedMarker.longitud,
-                "latitud" to editedMarker.latitud
+                "latitud" to editedMarker.latitud,
+                "category" to editedMarker.category
             )
         )
         getMarker()
@@ -153,6 +153,7 @@ class myViewModel : ViewModel() {
                 if (dc.type == DocumentChange.Type.ADDED) {
                     val newMarker = dc.document.toObject(Marker::class.java)
                     newMarker.markerId = dc.document.id
+                    newMarker.category = dc.document.get("category").toString()
                     newMarker.latitud =
                         dc.document.get("longitud").toString().toDouble()
                     newMarker.longitud =
@@ -163,6 +164,33 @@ class myViewModel : ViewModel() {
             _markerList.value = tempList
         }
     }
+
+    fun getMarkerCategory(category:String) {
+        repository.getMarkers()
+            .whereEqualTo("owner", _loggedUser.value)
+            .whereEqualTo("categoryName", category)
+            .addSnapshotListener{ value, error ->
+                if ( error!= null) {
+                    Log.e("Firestore error", error.message.toString())
+                    return@addSnapshotListener
+                }
+                val tempList = mutableListOf<Marker>()
+                for (dc: DocumentChange in value?.documentChanges!!) {
+                    if (dc.type == DocumentChange.Type.ADDED) {
+                        val newMarker = dc.document.toObject(Marker::class.java)
+                        newMarker.markerId = dc.document.id
+                        newMarker.category = dc.document.get("category").toString()
+                        newMarker.latitud =
+                            dc.document.get("longitud").toString().toDouble()
+                        newMarker.longitud =
+                            dc.document.get("latitud").toString().toDouble()
+                        tempList.add(newMarker)
+                    }
+                }
+                _markerList.value = tempList
+            }
+    }
+
     // ------------------------------------------------
 
     // -------------------- USER ----------------------

@@ -14,32 +14,20 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.DrawerState
-import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,13 +36,13 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.mapsappalexandru_smochina.MainActivity
@@ -236,7 +224,35 @@ fun MapScreen(
                             modifier = Modifier.fillMaxWidth()
                         )
 
+                        var selectedIcon by remember { mutableStateOf("mundo") }
+
+                        Row (
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Icon: ", fontWeight = FontWeight.Bold, color = Color.Black)
+                            viewModel.icons.forEach { icon ->
+                                val vectorName = icon
+                                val context = LocalContext.current
+                                val vectorId = context.resources.getIdentifier(vectorName, "drawable", context.packageName)
+                                val vectorResource = painterResource(id = vectorId)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Icon(
+                                    painter = vectorResource,
+                                    contentDescription = "Icon",
+                                    modifier = Modifier.size(25.dp)
+                                )
+                                RadioButton(
+                                    selected = (icon == selectedIcon),
+                                    onClick = { selectedIcon = icon },
+                                )
+                            }
+                        }
+
                         Button(
+                            modifier = Modifier
+                                .align(Alignment.CenterHorizontally),
                             onClick = {
                                 navigationController.navigate(Routes.ScreenCamera.route)
                                 viewModel.photoUri.value?.let { uri ->
@@ -247,7 +263,6 @@ fun MapScreen(
                                 imageVector = Icons.Filled.CameraAlt,
                                 contentDescription = "camera",
                                 modifier = Modifier
-
                             )
                         }
 
@@ -255,7 +270,7 @@ fun MapScreen(
                             onClick = {
                                 val direcion = viewModel.getPosition()
                                 // Agrega el marcador con las coordenadas almacenadas en markerLatLng y la información proporcionada
-                                viewModel.addMarker(com.example.mapsappalexandru_smochina.model.Marker(null,viewModel.getLoggedUser(),direcion.latitude, direcion.longitude,title, snippet))
+                                viewModel.addMarker(com.example.mapsappalexandru_smochina.model.Marker(null,viewModel.getLoggedUser(),direcion.latitude, direcion.longitude,title, snippet, selectedIcon))
                                 title = ""
                                 snippet = ""
                                 // Oculta el modal bottom sheet
