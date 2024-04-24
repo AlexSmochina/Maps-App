@@ -135,11 +135,13 @@ class myViewModel : ViewModel() {
 
     fun deleteMarker(markerId: String) {
         database.collection("marker").document(markerId).delete()
+        getMarker()
     }
 
     var repository = Repository()
     fun getMarker() {
         repository.getMarkers()
+
             .whereEqualTo("owner", _loggedUser.value)
             .addSnapshotListener{ value, error ->
             if ( error!= null) {
