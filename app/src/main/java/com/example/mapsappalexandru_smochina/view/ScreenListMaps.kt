@@ -17,10 +17,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,12 +47,8 @@ import com.example.mapsappalexandru_smochina.viewModel.myViewModel
 @Composable
 fun Screen_List_Maps(navigationController: NavHostController, viewModel: myViewModel) {
     val markers by viewModel.markerList.observeAsState(emptyList())
-
+    var verCategory by remember { mutableStateOf(false) }
     var selectedIcon by remember { mutableStateOf("mundo") }
-
-    LaunchedEffect(selectedIcon) {
-        viewModel.getMarkerCategory(selectedIcon)
-    }
 
     if (!viewModel.userLogged()) {
         viewModel.signOut(context = LocalContext.current, navigationController)
@@ -64,37 +62,62 @@ fun Screen_List_Maps(navigationController: NavHostController, viewModel: myViewM
         ) {
             Spacer(modifier = Modifier.height(8.dp))
 
-            Row (
-                horizontalArrangement = Arrangement.Center,
+            // Switch para cambiar entre la vista filtrada y la vista completa
+            Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
             ) {
-                Text("Icon: ", fontWeight = FontWeight.Bold, color = Color.Black)
-                viewModel.icons.forEach { icon ->
-                    val vectorName = icon
-                    val context = LocalContext.current
-                    val vectorId = context.resources.getIdentifier(vectorName, "drawable", context.packageName)
-                    val vectorResource = painterResource(id = vectorId)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(
-                        painter = vectorResource,
-                        contentDescription = "Icon",
-                        modifier = Modifier.size(25.dp)
-                    )
-                    RadioButton(
-                        selected = (icon == selectedIcon),
-                        onClick = { selectedIcon = icon },
-                    )
+                Text(
+                    text = if (verCategory) "Lista Filtrada" else "Lista Completa",
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    modifier = Modifier.weight(1f)
+                )
+                Switch(
+                    checked = verCategory,
+                    onCheckedChange = { verCategory = it }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Si estamos en la vista filtrada, mostramos los radio buttons para seleccionar el icono
+            if (verCategory) {
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Icon: ", fontWeight = FontWeight.Bold, color = Color.Black)
+                    viewModel.icons.forEach { icon ->
+                        val vectorName = icon
+                        val context = LocalContext.current
+                        val vectorId = context.resources.getIdentifier(vectorName, "drawable", context.packageName)
+                        val vectorResource = painterResource(id = vectorId)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            painter = vectorResource,
+                            contentDescription = "Icon",
+                            modifier = Modifier.size(25.dp)
+                        )
+                        RadioButton(
+                            selected = (icon == selectedIcon),
+                            onClick = { selectedIcon = icon },
+                        )
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Mostrar la lista completa o filtrada según el estado de verCategory
             LazyColumn(
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(markers) { marker ->
-                    if (marker.category == selectedIcon) {
+                    if (!verCategory || marker.category == selectedIcon) {
                         MarkerItem(marker = marker, viewModel)
                     }
                 }
@@ -102,8 +125,6 @@ fun Screen_List_Maps(navigationController: NavHostController, viewModel: myViewM
         }
     }
 }
-
-
 @Composable
 fun MarkerItem(marker: Marker, viewModel: myViewModel) {
     Card(
