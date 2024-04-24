@@ -162,7 +162,7 @@ fun Screen_Login(navigationController: NavHostController, viewModel: myViewModel
                 onCheckedChange = { isChecked ->
                     viewModel.cambiarPermanecerLogged(isChecked)
                 })
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(5.dp))
         }
 
         Button(

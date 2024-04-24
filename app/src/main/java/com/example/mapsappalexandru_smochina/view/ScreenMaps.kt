@@ -256,6 +256,8 @@ fun MapScreen(
                                 val direcion = viewModel.getPosition()
                                 // Agrega el marcador con las coordenadas almacenadas en markerLatLng y la información proporcionada
                                 viewModel.addMarker(com.example.mapsappalexandru_smochina.model.Marker(null,viewModel.getLoggedUser(),direcion.latitude, direcion.longitude,title, snippet))
+                                title = ""
+                                snippet = ""
                                 // Oculta el modal bottom sheet
                                 scope.launch { sheetState.hide() }.invokeOnCompletion {
                                     if (!sheetState.isVisible) {

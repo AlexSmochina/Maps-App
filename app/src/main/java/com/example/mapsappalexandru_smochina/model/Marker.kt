@@ -12,3 +12,4 @@ data class Marker(
 ){
     constructor() : this(null,null,0.0,0.0,"","", null)
 }
+

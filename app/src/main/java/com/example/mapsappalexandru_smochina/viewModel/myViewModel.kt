@@ -133,8 +133,8 @@ class myViewModel : ViewModel() {
         getMarker()
     }
 
-    fun deleteMarker(title: String) {
-        database.collection("marker").document(title).delete()
+    fun deleteMarker(markerId: String) {
+        database.collection("marker").document(markerId).delete()
     }
 
     var repository = Repository()
