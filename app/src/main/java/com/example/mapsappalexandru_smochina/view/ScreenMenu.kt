@@ -1,14 +1,16 @@
 package com.example.mapsappalexandru_smochina.view
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.AddAPhoto
 import androidx.compose.material.icons.outlined.List
 import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.Place
+import androidx.compose.material.icons.outlined.Replay
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
@@ -26,10 +28,12 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -58,7 +62,7 @@ fun MyTopAppBar(viewModel: myViewModel,state: DrawerState) {
     TopAppBar(
         title = { Text(text = "Maps APP") },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.Red,
+            containerColor = Color(22, 164, 235),
             titleContentColor = Color.White
         ),
         navigationIcon = {
@@ -101,8 +105,21 @@ fun MyDrawer(viewModel: myViewModel, navigationController: NavHostController, co
         gesturesEnabled = false,
         drawerContent = {
             ModalDrawerSheet {
-                Text(text = "Menú", modifier = Modifier.padding(20.dp), fontWeight = FontWeight.Bold )
-                Divider()
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(22, 164, 235))
+                        .padding(20.dp)
+                ) {
+                    Text(
+                        text = "Menú",
+                        modifier = Modifier.align(Alignment.Center),
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+                Divider() // Agrega el divisor después del texto si lo necesitas.
                 NavigationDrawerItem(
                     label = { Text("Maps") },
                     icon = { Icon(imageVector = Icons.Outlined.Place, contentDescription = "Maps") },
@@ -123,6 +140,17 @@ fun MyDrawer(viewModel: myViewModel, navigationController: NavHostController, co
                         scope.launch {
                             state.close()
                             navigationController.navigate(Routes.ScreenListMaps.route)
+                        }
+                    }
+                )
+                Divider()
+                NavigationDrawerItem(
+                    label = { Text("Volver") },
+                    icon = { Icon(imageVector = Icons.Outlined.Replay, contentDescription = "Volver") },
+                    selected = false,
+                    onClick = {
+                        scope.launch {
+                            state.close()
                         }
                     }
                 )
